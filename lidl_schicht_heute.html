@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Heutige Schicht</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@400;500;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: #f0f4fa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .widget {
+    width: 100%;
+    max-width: 480px;
+    background: #0050AA;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,80,170,0.25);
+  }
+
+  .top-bar {
+    background: #FFF000;
+    padding: 7px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .top-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #0050AA;
+  }
+
+  .top-date {
+    font-size: 11px;
+    font-weight: 600;
+    color: #003d82;
+  }
+
+  .content {
+    padding: 16px 18px 18px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .shift-icon {
+    width: 52px; height: 52px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+
+  .shift-main { flex: 1; }
+
+  .shift-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 26px;
+    color: white;
+    line-height: 1;
+    letter-spacing: 0.3px;
+  }
+
+  .shift-time {
+    font-size: 14px;
+    font-weight: 600;
+    color: #FFF000;
+    margin-top: 4px;
+  }
+
+  .shift-area {
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+    margin-top: 3px;
+  }
+
+  .shift-right {
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .hours-val {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 34px;
+    color: white;
+    line-height: 1;
+  }
+
+  .hours-lbl {
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+  }
+
+  .divider {
+    height: 1px;
+    background: rgba(255,255,255,0.08);
+    margin: 0 18px;
+  }
+
+  .bottom-bar {
+    padding: 10px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .status-dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #22c55e;
+    margin-right: 6px;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .status-text {
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+  }
+
+  .countdown {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.75);
+  }
+
+  .countdown span {
+    color: #FFF000;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+
+<div class="widget">
+  <div class="top-bar">
+    <div class="top-label">Heutige Schicht</div>
+    <div class="top-date" id="todayDate">Di, 19.05.2026</div>
+  </div>
+
+  <div class="content">
+    <div class="shift-icon">&#x1F305;</div>
+    <div class="shift-main">
+      <div class="shift-name">Frühschicht</div>
+      <div class="shift-time">06:00 &ndash; 14:00 Uhr</div>
+      <div class="shift-area">Linie 3 &middot; Verpackung</div>
+    </div>
+    <div class="shift-right">
+      <div class="hours-val">8</div>
+      <div class="hours-lbl">Stunden</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="bottom-bar">
+    <div>
+      <span class="status-dot"></span>
+      <span class="status-text">Schicht läuft</span>
+    </div>
+    <div class="countdown">Noch <span id="countdown">--:--</span> h</div>
+  </div>
+</div>
+
+<script>
+  // Datum
+  const days = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+  const now = new Date();
+  const dateStr = days[now.getDay()] + ', ' +
+    String(now.getDate()).padStart(2,'0') + '.' +
+    String(now.getMonth()+1).padStart(2,'0') + '.' +
+    now.getFullYear();
+  document.getElementById('todayDate').textContent = dateStr;
+
+  // Countdown bis Schichtende 14:00
+  function updateCountdown() {
+    const n = new Date();
+    const end = new Date();
+    end.setHours(14, 0, 0, 0);
+    const diff = end - n;
+
+    const statusDot = document.querySelector('.status-dot');
+    const statusText = document.querySelector('.status-text');
+    const countdownEl = document.getElementById('countdown');
+
+    if (diff <= 0) {
+      statusDot.style.background = '#94a3b8';
+      statusDot.style.animation = 'none';
+      statusText.textContent = 'Schicht beendet';
+      countdownEl.textContent = '00:00';
+      return;
+    }
+
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    countdownEl.textContent = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+  }
+
+  updateCountdown();
+  setInterval(updateCountdown, 60000);
+</script>
+</body>
+</html>
