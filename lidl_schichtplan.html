@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lidl Schichtplan</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap');
+
+  :root {
+    --lidl-blue: #0050AA;
+    --lidl-yellow: #FFF000;
+    --lidl-blue-dark: #003d82;
+    --lidl-blue-light: #1a6bc7;
+    --lidl-yellow-dark: #d4c800;
+    --bg: #f0f4fa;
+    --white: #ffffff;
+    --gray-light: #e8edf5;
+    --gray-mid: #b0bfd4;
+    --gray-text: #5a6b85;
+    --text-dark: #0a1f3d;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 680px;
+  }
+
+  .header {
+    background: var(--lidl-blue);
+    border-radius: 16px 16px 0 0;
+    padding: 20px 24px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header::before {
+    content: '';
+    position: absolute;
+    right: -30px; top: -30px;
+    width: 160px; height: 160px;
+    background: var(--lidl-yellow);
+    border-radius: 50%;
+    opacity: 0.08;
+  }
+
+  .header-left { display: flex; align-items: center; gap: 14px; }
+
+  .lidl-logo {
+    width: 44px; height: 44px;
+    background: var(--lidl-yellow);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 15px;
+    color: var(--lidl-blue);
+    letter-spacing: -0.5px;
+    flex-shrink: 0;
+  }
+
+  .header-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    color: white;
+    letter-spacing: 0.3px;
+  }
+
+  .header-sub {
+    font-size: 12px;
+    color: rgba(255,255,255,0.65);
+    margin-top: 2px;
+  }
+
+  .employee-badge {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    padding: 8px 12px;
+    text-align: right;
+  }
+
+  .emp-name { font-size: 13px; font-weight: 600; color: white; }
+  .emp-dept { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+
+  .week-nav {
+    background: var(--lidl-blue-dark);
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-btn {
+    width: 32px; height: 32px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .nav-btn:hover { background: rgba(255,240,0,0.2); border-color: var(--lidl-yellow); color: var(--lidl-yellow); }
+
+  .week-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px; font-weight: 600;
+    color: white; letter-spacing: 0.5px;
+    text-align: center;
+  }
+
+  .week-range { font-size: 11px; color: rgba(255,255,255,0.55); margin-top: 1px; text-align: center; }
+
+  .stats-bar {
+    background: var(--lidl-yellow);
+    padding: 10px 24px;
+    display: flex;
+    gap: 0;
+  }
+
+  .stat {
+    flex: 1;
+    text-align: center;
+    border-right: 1px solid rgba(0,80,170,0.15);
+  }
+  .stat:last-child { border-right: none; }
+
+  .stat-val {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 22px; font-weight: 900;
+    color: var(--lidl-blue);
+    line-height: 1;
+  }
+
+  .stat-lbl {
+    font-size: 10px; font-weight: 600;
+    color: var(--lidl-blue-dark);
+    opacity: 0.75;
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .shift-grid {
+    background: white;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .shift-row {
+    display: grid;
+    grid-template-columns: 70px 1fr auto;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: var(--bg);
+    border: 1.5px solid transparent;
+    transition: all 0.15s;
+    cursor: pointer;
+    animation: fadeIn 0.3s ease both;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .shift-row:hover { border-color: var(--lidl-blue); background: #e8f0fa; }
+
+  .shift-row.today {
+    background: #e6f0ff;
+    border-color: var(--lidl-blue);
+  }
+
+  .shift-row.frei { opacity: 0.6; }
+  .shift-row.frei:hover { opacity: 0.8; }
+
+  .day-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--text-dark);
+    letter-spacing: 0.3px;
+  }
+
+  .day-date {
+    font-size: 11px;
+    color: var(--gray-text);
+    margin-top: 1px;
+  }
+
+  .shift-info { display: flex; flex-direction: column; gap: 4px; }
+
+  .shift-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+
+  .shift-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .dot-early { background: #22c55e; }
+  .dot-late  { background: #f97316; }
+  .dot-night { background: #8b5cf6; }
+  .dot-free  { background: var(--gray-mid); }
+  .dot-vacation { background: var(--lidl-yellow); border: 1px solid var(--lidl-yellow-dark); }
+
+  .shift-time {
+    font-size: 12px;
+    color: var(--gray-text);
+    margin-left: 14px;
+  }
+
+  .shift-area {
+    font-size: 11px;
+    color: var(--lidl-blue);
+    font-weight: 500;
+    margin-left: 14px;
+  }
+
+  .shift-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  .badge-early  { background: #dcfce7; color: #15803d; }
+  .badge-late   { background: #fff7ed; color: #c2410c; }
+  .badge-night  { background: #ede9fe; color: #6d28d9; }
+  .badge-free   { background: var(--gray-light); color: var(--gray-text); }
+  .badge-vacation { background: var(--lidl-yellow); color: var(--lidl-blue); }
+  .badge-today  { background: var(--lidl-blue); color: white; }
+
+  .today-marker {
+    display: inline-block;
+    background: var(--lidl-yellow);
+    color: var(--lidl-blue);
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 2px 5px;
+    border-radius: 3px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  .footer {
+    background: var(--lidl-blue);
+    border-radius: 0 0 16px 16px;
+    padding: 14px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .legend {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .legend-item {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 11px; color: rgba(255,255,255,0.7);
+  }
+
+  .swap-btn {
+    background: var(--lidl-yellow);
+    color: var(--lidl-blue);
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    transition: all 0.15s;
+  }
+  .swap-btn:hover { background: white; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="header-left">
+<div>
+        <div class="header-title">Mein Schichtplan</div>
+        <div class="header-sub">Wochenübersicht &middot; Produktion</div>
+      </div>
+    </div>
+    <div class="employee-badge">
+      <div class="emp-name">&#x2600; Frühschicht</div>
+      <div class="emp-dept">06:00 &ndash; 14:00 Uhr</div>
+      <div class="emp-dept">Linie 3 &middot; Verpackung</div>
+    </div>
+  </div>
+
+  <div class="week-nav">
+    <button class="nav-btn" onclick="changeWeek(-1)">&#8249;</button>
+    <div style="text-align:center">
+      <div class="week-label" id="weekLabel">KW 21 &middot; 2026</div>
+      <div class="week-range" id="weekRange">19.05. &ndash; 25.05.2026</div>
+    </div>
+    <button class="nav-btn" onclick="changeWeek(1)">&#8250;</button>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat">
+      <div class="stat-val" id="statShifts">5</div>
+      <div class="stat-lbl">Schichten</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="statHours">40</div>
+      <div class="stat-lbl">Stunden</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="statFrei">2</div>
+      <div class="stat-lbl">Freitage</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="statUrlaub">0</div>
+      <div class="stat-lbl">Urlaub</div>
+    </div>
+  </div>
+
+  <div class="shift-grid" id="shiftGrid"></div>
+
+  <div class="footer">
+    <div class="legend">
+      <div class="legend-item"><div class="shift-dot dot-early"></div> Früh</div>
+      <div class="legend-item"><div class="shift-dot dot-late"></div> Spät</div>
+      <div class="legend-item"><div class="shift-dot dot-night"></div> Nacht</div>
+      <div class="legend-item"><div class="shift-dot dot-vacation"></div> Urlaub</div>
+    </div>
+    <button class="swap-btn">&#8644; Tausch anfragen</button>
+  </div>
+
+</div>
+
+<script>
+  const SHIFTS_DATA = {
+    0: [
+      { type: 'early',    label: 'Frühschicht',  time: '06:00 – 14:00', area: 'Linie 3 · Verpackung',  hours: 8 },
+      { type: 'early',    label: 'Frühschicht',  time: '06:00 – 14:00', area: 'Linie 3 · Verpackung',  hours: 8 },
+      { type: 'late',     label: 'Spätschicht',  time: '14:00 – 22:00', area: 'Linie 1 · Befüllung',   hours: 8 },
+      { type: 'late',     label: 'Spätschicht',  time: '14:00 – 22:00', area: 'Linie 1 · Befüllung',   hours: 8 },
+      { type: 'late',     label: 'Spätschicht',  time: '14:00 – 22:00', area: 'Linie 3 · Verpackung',  hours: 8 },
+      { type: 'free',     label: 'Frei',          time: '',              area: '',                       hours: 0 },
+      { type: 'free',     label: 'Frei',          time: '',              area: '',                       hours: 0 },
+    ],
+    1: [
+      { type: 'night',    label: 'Nachtschicht', time: '22:00 – 06:00', area: 'Linie 2 · Logistik',    hours: 8 },
+      { type: 'night',    label: 'Nachtschicht', time: '22:00 – 06:00', area: 'Linie 2 · Logistik',    hours: 8 },
+      { type: 'night',    label: 'Nachtschicht', time: '22:00 – 06:00', area: 'Linie 2 · Logistik',    hours: 8 },
+      { type: 'free',     label: 'Frei',          time: '',              area: '',                       hours: 0 },
+      { type: 'early',    label: 'Frühschicht',  time: '06:00 – 14:00', area: 'Linie 3 · Verpackung',  hours: 8 },
+      { type: 'early',    label: 'Frühschicht',  time: '06:00 – 14:00', area: 'Linie 3 · Verpackung',  hours: 8 },
+      { type: 'free',     label: 'Frei',          time: '',              area: '',                       hours: 0 },
+    ],
+    2: [
+      { type: 'vacation', label: 'Urlaub',        time: '',              area: '',                       hours: 0 },
+      { type: 'vacation', label: 'Urlaub',        time: '',              area: '',                       hours: 0 },
+      { type: 'vacation', label: 'Urlaub',        time: '',              area: '',                       hours: 0 },
+      { type: 'vacation', label: 'Urlaub',        time: '',              area: '',                       hours: 0 },
+      { type: 'vacation', label: 'Urlaub',        time: '',              area: '',                       hours: 0 },
+      { type: 'free',     label: 'Frei',          time: '',              area: '',                       hours: 0 },
+      { type: 'free',     label: 'Frei',          time: '',              area: '',                       hours: 0 },
+    ],
+    3: [
+      { type: 'late',     label: 'Spätschicht',  time: '14:00 – 22:00', area: 'Linie 3 · Verpackung',  hours: 8 },
+      { type: 'late',     label: 'Spätschicht',  time: '14:00 – 22:00', area: 'Linie 3 · Verpackung',  hours: 8 },
+      { type: 'early',    label: 'Frühschicht',  time: '06:00 – 14:00', area: 'Linie 1 · Befüllung',   hours: 8 },
+      { type: 'early',    label: 'Frühschicht',  time: '06:00 – 14:00', area: 'Linie 1 · Befüllung',   hours: 8 },
+      { type: 'free',     label: 'Frei',          time: '',              area: '',                       hours: 0 },
+      { type: 'night',    label: 'Nachtschicht', time: '22:00 – 06:00', area: 'Linie 2 · Logistik',    hours: 8 },
+      { type: 'free',     label: 'Frei',          time: '',              area: '',                       hours: 0 },
+    ],
+  };
+
+  const DAY_NAMES = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+  let weekOffset = 0;
+
+  function getMonday(date) {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    d.setDate(diff);
+    d.setHours(0,0,0,0);
+    return d;
+  }
+
+  function getISOWeek(date) {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  }
+
+  function fmt(date) {
+    return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+  }
+
+  function renderWeek() {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const currentMonday = getMonday(today);
+    const monday = new Date(currentMonday);
+    monday.setDate(monday.getDate() + weekOffset * 7);
+    const sunday = new Date(monday);
+    sunday.setDate(sunday.getDate() + 6);
+
+    const kw = getISOWeek(monday);
+    document.getElementById('weekLabel').textContent = 'KW ' + kw + ' \u00b7 ' + monday.getFullYear();
+    document.getElementById('weekRange').textContent = fmt(monday) + '. \u2013 ' + fmt(sunday) + '.' + sunday.getFullYear();
+
+    const shifts = SHIFTS_DATA[Math.min(weekOffset, 3)] || SHIFTS_DATA[3];
+    let totalShifts = 0, totalHours = 0, freeDays = 0, vacDays = 0;
+
+    const grid = document.getElementById('shiftGrid');
+    grid.innerHTML = '';
+
+    shifts.forEach(function(s, i) {
+      const dayDate = new Date(monday);
+      dayDate.setDate(dayDate.getDate() + i);
+      const isToday = dayDate.getTime() === today.getTime();
+
+      if (s.type !== 'free' && s.type !== 'vacation') { totalShifts++; totalHours += s.hours; }
+      if (s.type === 'free') freeDays++;
+      if (s.type === 'vacation') vacDays++;
+
+      const row = document.createElement('div');
+      row.className = 'shift-row' + (s.type === 'free' ? ' frei' : '') + (isToday ? ' today' : '');
+      row.style.animationDelay = (i * 0.05) + 's';
+
+      const todayMark = isToday ? '<span class="today-marker">Heute</span>' : '';
+
+      let badgeClass = 'badge-' + s.type;
+      if (isToday && s.type !== 'free') badgeClass = 'badge-today';
+
+      const dotClass = 'dot-' + s.type;
+
+      const badgeLabel = s.type === 'early' ? 'Früh' : s.type === 'late' ? 'Spät' : s.type === 'night' ? 'Nacht' : s.type === 'vacation' ? 'Urlaub' : 'Frei';
+
+      row.innerHTML =
+        '<div class="day-block">' +
+          '<div class="day-name">' + DAY_NAMES[i] + todayMark + '</div>' +
+          '<div class="day-date">' + fmt(dayDate) + '.</div>' +
+        '</div>' +
+        '<div class="shift-info">' +
+          '<div class="shift-type"><span class="shift-dot ' + dotClass + '"></span>' + s.label + '</div>' +
+          (s.time ? '<div class="shift-time">' + s.time + '</div>' : '') +
+          (s.area ? '<div class="shift-area">' + s.area + '</div>' : '') +
+        '</div>' +
+        '<div><span class="shift-badge ' + badgeClass + '">' + badgeLabel + '</span></div>';
+
+      grid.appendChild(row);
+    });
+
+    document.getElementById('statShifts').textContent = totalShifts;
+    document.getElementById('statHours').textContent = totalHours;
+    document.getElementById('statFrei').textContent = freeDays;
+    document.getElementById('statUrlaub').textContent = vacDays;
+  }
+
+  function changeWeek(dir) {
+    weekOffset = Math.max(0, Math.min(3, weekOffset + dir));
+    renderWeek();
+  }
+
+  renderWeek();
+</script>
+</body>
+</html>
