@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meine Schichten</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@400;500;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: #f0f4fa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .widget {
+    width: 100%;
+    max-width: 680px;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,80,170,0.2);
+  }
+
+  .top-bar {
+    background: #FFF000;
+    padding: 7px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .top-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #0050AA;
+  }
+
+  .top-date {
+    font-size: 11px;
+    font-weight: 600;
+    color: #003d82;
+  }
+
+  .shifts-row {
+    display: flex;
+  }
+
+  .current-shift {
+    flex: 1;
+    background: #0050AA;
+    padding: 20px 20px 18px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .next-shift {
+    flex: 1;
+    background: white;
+    padding: 20px 20px 18px;
+    display: flex;
+    flex-direction: column;
+    border-left: 3px solid #FFF000;
+  }
+
+  .section-tag {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+  }
+  .current-shift .section-tag { color: rgba(255,255,255,0.5); }
+  .next-shift .section-tag    { color: rgba(0,80,170,0.45); }
+
+  .shift-icon { font-size: 26px; line-height: 1; }
+
+  .shift-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 26px;
+    line-height: 1;
+    margin-top: 8px;
+  }
+  .current-shift .shift-name { color: white; }
+  .next-shift .shift-name    { color: #0050AA; }
+
+  .shift-time {
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 6px;
+  }
+  .current-shift .shift-time { color: #FFF000; }
+  .next-shift .shift-time    { color: #0050AA; }
+
+  .shift-area {
+    font-size: 12px;
+    margin-top: 4px;
+  }
+  .current-shift .shift-area { color: rgba(255,255,255,0.55); }
+  .next-shift .shift-area    { color: rgba(0,80,170,0.5); }
+
+  .hours-chip {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 3px;
+    margin-top: 14px;
+  }
+
+  .hours-val {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 28px;
+    line-height: 1;
+  }
+  .current-shift .hours-val { color: white; }
+  .next-shift .hours-val    { color: #0050AA; }
+
+  .hours-lbl {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .current-shift .hours-lbl { color: rgba(255,255,255,0.45); }
+  .next-shift .hours-lbl    { color: rgba(0,80,170,0.4); }
+
+  .next-day-badge {
+    display: inline-block;
+    background: #e8f0fa;
+    color: #0050AA;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-top: 10px;
+  }
+
+  .status-bar {
+    display: flex;
+  }
+
+  .status-current {
+    flex: 1;
+    background: #003d82;
+    padding: 9px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .status-next {
+    flex: 1;
+    background: #eef2fa;
+    padding: 9px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-left: 3px solid #FFF000;
+  }
+
+  .status-dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #22c55e;
+    margin-right: 6px;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+
+  .status-current .s-text { font-size: 12px; color: rgba(255,255,255,0.6); }
+  .status-next .s-text    { font-size: 12px; color: rgba(0,80,170,0.55); }
+
+  .countdown {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.7);
+  }
+  .countdown span {
+    color: #FFF000;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .in-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(0,80,170,0.5);
+  }
+  .in-label span {
+    color: #0050AA;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+
+<div class="widget">
+
+  <div class="top-bar">
+    <div class="top-label">Meine Schichten</div>
+    <div class="top-date" id="todayDate">Di, 19.05.2026</div>
+  </div>
+
+  <div class="shifts-row">
+
+    <div class="current-shift">
+      <div class="section-tag">&#x25CF; Aktuelle Schicht</div>
+      <div class="shift-icon">&#x1F305;</div>
+      <div class="shift-name">Frühschicht</div>
+      <div class="shift-time">06:00 &ndash; 14:00 Uhr</div>
+      <div class="shift-area">Linie 3 &middot; Verpackung</div>
+      <div class="hours-chip">
+        <span class="hours-val">8</span>
+        <span class="hours-lbl">Std.</span>
+      </div>
+    </div>
+
+    <div class="next-shift">
+      <div class="section-tag">&#x25B6; Nächste Schicht</div>
+      <div class="shift-icon">&#x1F319;</div>
+      <div class="shift-name">Spätschicht</div>
+      <div class="shift-time">14:00 &ndash; 22:00 Uhr</div>
+      <div class="shift-area">Linie 1 &middot; Befüllung</div>
+      <div class="hours-chip">
+        <span class="hours-val">8</span>
+        <span class="hours-lbl">Std.</span>
+      </div>
+      <div class="next-day-badge">Mi, 20.05.2026</div>
+    </div>
+
+  </div>
+
+  <div class="status-bar">
+    <div class="status-current">
+      <div>
+        <span class="status-dot"></span>
+        <span class="s-text">Schicht läuft</span>
+      </div>
+      <div class="countdown">Noch <span id="countdown">--:--</span> h</div>
+    </div>
+    <div class="status-next">
+      <span class="s-text">Beginnt in</span>
+      <span class="in-label"><span id="inHours">--</span> Std.</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const days = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+  const n = new Date();
+  document.getElementById('todayDate').textContent =
+    days[n.getDay()] + ', ' +
+    String(n.getDate()).padStart(2,'0') + '.' +
+    String(n.getMonth()+1).padStart(2,'0') + '.' +
+    n.getFullYear();
+
+  function updateTimes() {
+    const now = new Date();
+
+    const end = new Date(); end.setHours(14,0,0,0);
+    const diff = end - now;
+    const dot = document.querySelector('.status-dot');
+    const countdownEl = document.getElementById('countdown');
+
+    if (diff <= 0) {
+      dot.style.background = '#94a3b8';
+      dot.style.animation = 'none';
+      document.querySelector('.status-current .s-text').textContent = 'Beendet';
+      countdownEl.textContent = '00:00';
+    } else {
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      countdownEl.textContent = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+    }
+
+    const nextStart = new Date();
+    nextStart.setDate(nextStart.getDate() + 1);
+    nextStart.setHours(14,0,0,0);
+    document.getElementById('inHours').textContent = Math.round((nextStart - now) / 3600000);
+  }
+
+  updateTimes();
+  setInterval(updateTimes, 60000);
+</script>
+</body>
+</html>
