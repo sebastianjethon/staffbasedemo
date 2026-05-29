@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finnair Crew Roster – Anna Mäkinen</title>
+  <style>
+    /* ─── Design Tokens ─── */
+    :root {
+      /* Brand palette */
+      --navy:      #0C0243;   /* primary */
+      --navy-deep: #070130;   /* darkest */
+      --navy-mid:  #16055A;   /* slightly lighter */
+      --navy-muted:#3D2F8A;   /* accent/muted */
+      --lavender:  #E4E4EE;   /* light background / border */
+      --lavender-light: #F0F0F7; /* near-white */
+      --white:     #FFFFFF;
+
+      /* Aliases for internal use */
+      --blue-900: var(--navy-deep);
+      --blue-800: var(--navy);
+      --blue-700: var(--navy);
+      --blue-600: var(--navy-mid);
+      --blue-500: var(--navy-muted);
+      --blue-300: #7060C0;
+      --blue-100: var(--lavender);
+      --blue-50:  var(--lavender-light);
+
+      /* Neutrals — derived from brand hue */
+      --gray-50:  #F5F5F8;
+      --gray-100: #E4E4EE;
+      --gray-200: #CECEDD;
+      --gray-400: #8A8A9E;
+      --gray-600: #5A5A72;
+      --gray-800: #0C0243;   /* use brand navy for dark text */
+
+      /* Semantic status colors */
+      --green:    #1B8A4E;
+      --green-bg: #E6F5EE;
+      --orange:   #C85000;
+      --orange-bg:#FFF0E6;
+      --violet:   #4A35C0;
+      --violet-bg:#EEEDF8;
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 4px rgba(12,2,67,.07);
+      --shadow-md: 0 4px 16px rgba(12,2,67,.10);
+      --shadow-lg: 0 8px 32px rgba(12,2,67,.16);
+    }
+
+    /* ─── Reset ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-800);
+      min-height: 100dvh;
+    }
+
+    /* ─── Header ─── */
+    .header {
+      background: var(--navy);
+      color: var(--white);
+      padding: 0;
+      user-select: none;
+    }
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px 14px;
+    }
+    .logo {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .logo-name {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      line-height: 1;
+    }
+    .logo-sub {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--lavender);
+      opacity: .7;
+    }
+    .header-crew {
+      text-align: right;
+    }
+    .crew-name {
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .crew-meta {
+      font-size: 11px;
+      opacity: .55;
+      margin-top: 2px;
+    }
+    .header-bar {
+      background: rgba(255,255,255,.07);
+      border-top: 1px solid rgba(255,255,255,.08);
+      padding: 8px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .hbar-date { font-size: 12px; opacity: .75; letter-spacing: .3px; }
+    .hbar-time {
+      font-size: 16px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 1px;
+    }
+    .hbar-tz { font-size: 10px; opacity: .55; text-align: right; margin-top: 1px; }
+
+    /* ─── Nav Tabs ─── */
+    .nav {
+      background: var(--white);
+      display: flex;
+      border-bottom: 1.5px solid var(--gray-100);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      box-shadow: var(--shadow-sm);
+    }
+    .nav-tab {
+      flex: 1;
+      padding: 13px 10px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .6px;
+      text-transform: uppercase;
+      color: var(--gray-400);
+      border: none;
+      background: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      transition: color .2s, border-color .2s;
+    }
+    .nav-tab.active {
+      color: var(--navy);
+      border-bottom-color: var(--navy);
+    }
+    .nav-tab:hover:not(.active) {
+      color: var(--navy-muted);
+      background: var(--lavender-light);
+    }
+    .nav-tab .tab-icon { margin-right: 5px; }
+
+    /* ─── Page Panels ─── */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ─── Layout ─── */
+    .content {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px 14px 40px;
+    }
+
+    /* ─── Section Label ─── */
+    .sec-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--gray-400);
+      margin-bottom: 10px;
+    }
+    .sec-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--gray-200);
+    }
+
+    /* ─── Shift Card ─── */
+    .shift-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1.5px solid var(--gray-200);
+      box-shadow: var(--shadow-md);
+      margin-bottom: 22px;
+    }
+    .shift-card.is-current {
+      border-color: var(--navy);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .card-top {
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .card-top.st-active   { background: linear-gradient(90deg,#9A3800,var(--orange)); color:var(--white); }
+    .card-top.st-upcoming { background: var(--navy); color:var(--white); }
+    .card-top.st-completed{ background: linear-gradient(90deg,#145C38,var(--green)); color:var(--white); }
+    .card-top.st-off      { background: var(--lavender); color:var(--gray-600); }
+    .card-top.st-rest     { background: var(--lavender); color:var(--navy-muted); }
+    .card-top.st-layover  { background: var(--navy-mid); color:var(--white); }
+
+    .ct-left {}
+    .ct-status {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      opacity: .8;
+    }
+    .ct-shift-type {
+      font-size: 17px;
+      font-weight: 800;
+      margin-top: 2px;
+      line-height: 1.1;
+    }
+    .ct-right { text-align: right; }
+    .ct-date { font-size: 13px; font-weight: 700; opacity: .95; }
+    .ct-weekday { font-size: 11px; opacity: .6; margin-top: 2px; }
+
+    .card-body { padding: 16px 18px; }
+
+    /* ─── Briefing Row ─── */
+    .briefing-row {
+      display: flex;
+      align-items: center;
+      background: var(--blue-50);
+      border-radius: var(--radius-sm);
+      padding: 9px 12px;
+      margin-bottom: 14px;
+      gap: 8px;
+      border: 1px solid var(--blue-100);
+    }
+    .br-icon { font-size: 17px; }
+    .br-label { font-size: 12px; color: var(--gray-600); font-weight: 500; }
+    .br-time {
+      margin-left: auto;
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--navy);
+      font-variant-numeric: tabular-nums;
+    }
+    .br-loc { font-size: 11px; color: var(--gray-400); margin-left: 4px; }
+
+    /* ─── Sector List ─── */
+    .sectors { display: flex; flex-direction: column; gap: 0; }
+
+    .sector-wrapper {
+      display: flex;
+      align-items: stretch;
+      gap: 10px;
+    }
+    .sector-connector {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 18px;
+      flex-shrink: 0;
+      padding: 0;
+    }
+    .sc-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--gray-200);
+      flex-shrink: 0;
+      margin-top: 16px;
+      position: relative;
+    }
+    .sc-dot.done  { background: var(--green); }
+    .sc-dot.flying {
+      background: var(--orange);
+      box-shadow: 0 0 0 4px var(--orange-bg);
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+    .sc-dot.next  { background: var(--gray-200); border: 2px solid var(--blue-300); }
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 0 4px rgba(217,92,0,.18); }
+      50%      { box-shadow: 0 0 0 8px rgba(217,92,0,.08); }
+    }
+    .sc-line {
+      flex: 1;
+      width: 2px;
+      background: var(--gray-200);
+      margin: 3px 0;
+    }
+    .sc-line.done { background: var(--green); opacity: .4; }
+
+    .sector-item {
+      flex: 1;
+      background: var(--gray-50);
+      border-radius: var(--radius-md);
+      padding: 10px 13px;
+      margin-bottom: 8px;
+      border: 1px solid var(--gray-200);
+      transition: border-color .2s, background .2s;
+    }
+    .sector-item.is-flying {
+      background: var(--orange-bg);
+      border-color: #F0A070;
+    }
+    .sector-item.is-done { opacity: .65; }
+
+    .si-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 7px;
+    }
+    .fn-badge {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--navy);
+      background: var(--lavender);
+      border: 1px solid var(--gray-200);
+      padding: 2px 7px;
+      border-radius: 5px;
+    }
+    .ac-badge { font-size: 11px; color: var(--gray-400); }
+
+    .si-route {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .apt {
+      font-size: 23px;
+      font-weight: 900;
+      letter-spacing: -1px;
+      line-height: 1;
+      color: var(--gray-800);
+    }
+    .route-mid {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      min-width: 0;
+    }
+    .route-dash {
+      flex: 1;
+      height: 1.5px;
+      background: var(--gray-200);
+    }
+    .plane-icon { font-size: 13px; color: var(--navy-muted); }
+    .apt-city { font-size: 10px; color: var(--gray-400); font-weight: 500; margin-top: 2px; }
+
+    .si-times {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+    }
+    .st-col {}
+    .st-time { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .st-label { font-size: 10px; color: var(--gray-400); }
+    .st-dur { font-size: 11px; color: var(--gray-400); text-align: center; margin-top: 2px; }
+
+    /* ─── Progress Bar ─── */
+    .shift-progress {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--gray-100);
+    }
+    .sp-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--gray-400);
+      margin-bottom: 6px;
+    }
+    .sp-bar {
+      height: 5px;
+      background: var(--gray-200);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .sp-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--navy), var(--navy-muted));
+      border-radius: 3px;
+      transition: width 60s linear;
+    }
+
+    /* ─── Off/Rest Card Body ─── */
+    .off-body {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 6px 0;
+    }
+    .off-icon { font-size: 38px; }
+    .off-title { font-size: 16px; font-weight: 700; color: var(--gray-600); }
+    .off-sub { font-size: 13px; color: var(--gray-400); margin-top: 3px; }
+
+    /* ─── Monthly View ─── */
+    .month-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .month-title { font-size: 19px; font-weight: 800; }
+    .month-stats { display: flex; gap: 8px; }
+    .stat-pill {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+    .sp-blue { background: var(--lavender); color: var(--navy); border: 1px solid var(--gray-200); }
+    .sp-orange { background: var(--orange-bg); color: var(--orange); border: 1px solid #F9C8A8; }
+
+    /* View toggle */
+    .view-toggle {
+      display: flex;
+      background: var(--gray-100);
+      border-radius: var(--radius-sm);
+      padding: 3px;
+      margin-bottom: 16px;
+      border: 1px solid var(--gray-200);
+      gap: 2px;
+    }
+    .vt-btn {
+      flex: 1;
+      padding: 7px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: transparent;
+      color: var(--gray-400);
+      transition: all .2s;
+    }
+    .vt-btn.active {
+      background: var(--navy);
+      color: var(--white);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .leg-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: var(--gray-600);
+    }
+    .leg-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    /* Calendar */
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 3px;
+      margin-bottom: 20px;
+    }
+    .cal-hdr {
+      text-align: center;
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--gray-400);
+      padding: 5px 0;
+    }
+    .cal-day {
+      aspect-ratio: 1;
+      border-radius: var(--radius-sm);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: default;
+      transition: transform .15s;
+      min-height: 40px;
+      font-size: 13px;
+      position: relative;
+    }
+    .cal-day.clickable { cursor: pointer; }
+    .cal-day.clickable:hover { transform: scale(1.08); }
+    .cal-day.empty { background: transparent !important; }
+    .cal-day.d-off { background: var(--gray-100); color: var(--gray-400); }
+    .cal-day.d-flight {
+      background: var(--lavender);
+      color: var(--navy);
+      font-weight: 700;
+      border: 1px solid var(--gray-200);
+    }
+    .cal-day.d-longhaul {
+      background: var(--navy);
+      color: var(--white);
+      font-weight: 700;
+      border: none;
+    }
+    .cal-day.d-layover {
+      background: var(--lavender-light);
+      color: var(--navy-muted);
+      border: 1px dashed var(--gray-200);
+    }
+    .cal-day.d-rest {
+      background: var(--lavender);
+      color: var(--navy-muted);
+      font-weight: 600;
+    }
+    .cal-day.d-today {
+      background: var(--navy) !important;
+      color: var(--white) !important;
+      font-weight: 800 !important;
+      box-shadow: 0 3px 14px rgba(12,2,67,.4) !important;
+      border: none !important;
+      outline: 2px solid rgba(255,255,255,.3);
+      outline-offset: 1px;
+    }
+    .cal-num { font-size: 13px; font-weight: inherit; line-height: 1; }
+    .cal-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: .5;
+      margin-top: 3px;
+    }
+    .d-off .cal-dot, .empty .cal-dot, .d-rest .cal-dot, .d-layover .cal-dot { display: none; }
+
+    /* Roster List */
+    .roster-list { display: flex; flex-direction: column; gap: 7px; }
+    .roster-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--white);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      border: 1.5px solid var(--gray-200);
+      cursor: default;
+      transition: box-shadow .15s, transform .15s;
+    }
+    .roster-row.clickable { cursor: pointer; }
+    .roster-row.clickable:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-1px);
+    }
+    .roster-row.is-today { border-color: var(--navy); background: var(--lavender-light); }
+
+    .rr-date { min-width: 38px; text-align: center; }
+    .rr-num { font-size: 20px; font-weight: 900; line-height: 1; }
+    .rr-wday { font-size: 10px; text-transform: uppercase; font-weight: 700; color: var(--gray-400); margin-top: 2px; }
+    .rr-divider { width: 1px; height: 34px; background: var(--gray-200); flex-shrink: 0; }
+    .rr-info { flex: 1; min-width: 0; }
+    .rr-title { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .rr-sub { font-size: 11px; color: var(--gray-400); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .rr-badge {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 9px;
+      border-radius: 20px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .rb-flight  { background: var(--lavender); color: var(--navy); border: 1px solid var(--gray-200); }
+    .rb-lh      { background: var(--navy); color: var(--white); border: none; }
+    .rb-layover { background: var(--lavender-light); color: var(--navy-muted); border: 1px solid var(--gray-200); }
+    .rb-rest    { background: var(--lavender); color: var(--navy-muted); border: 1px solid var(--gray-200); }
+    .rb-off     { background: var(--gray-100); color: var(--gray-400); border: 1px solid var(--gray-200); }
+    .rb-active  { background: var(--orange-bg); color: var(--orange); border: 1px solid #F0A070; }
+
+    /* ─── Detail Drawer ─── */
+    .drawer-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,10,30,.45);
+      z-index: 100;
+      backdrop-filter: blur(2px);
+    }
+    .drawer-overlay.open { display: block; }
+    .drawer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      max-width: 600px;
+      margin: 0 auto;
+      background: var(--white);
+      border-radius: 24px 24px 0 0;
+      padding: 20px 18px 32px;
+      z-index: 101;
+      box-shadow: 0 -8px 40px rgba(0,0,0,.2);
+      transform: translateY(100%);
+      transition: transform .3s cubic-bezier(.4,0,.2,1);
+      max-height: 85dvh;
+      overflow-y: auto;
+    }
+    .drawer.open { transform: translateY(0); }
+    .drawer-handle {
+      width: 40px;
+      height: 4px;
+      background: var(--gray-200);
+      border-radius: 2px;
+      margin: 0 auto 18px;
+    }
+    .drawer-close {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: var(--gray-100);
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gray-600);
+    }
+    .drawer-close:hover { background: var(--gray-200); }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 380px) {
+      .apt { font-size: 19px; }
+      .cal-day { min-height: 34px; }
+      .cal-num { font-size: 11px; }
+      .month-stats { display: none; }
+      .header-inner { padding: 14px 14px 10px; }
+      .logo-name { font-size: 15px; }
+    }
+    @media (min-width: 600px) {
+      .content { padding: 24px 24px 48px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ────────────────────────────────────────── -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-name">Finnair</div>
+      <div class="logo-sub">Crew Roster</div>
+    </div>
+    <div class="header-crew">
+      <div class="crew-name">Anna Mäkinen</div>
+      <div class="crew-meta">FA-2847 · Cabin Crew Senior</div>
+    </div>
+  </div>
+  <div class="header-bar">
+    <div>
+      <div class="hbar-date" id="headerDate">Friday, 29 May 2026</div>
+    </div>
+    <div style="text-align:right">
+      <div class="hbar-time" id="headerTime">--:--</div>
+      <div class="hbar-tz">Helsinki (EET/EEST)</div>
+    </div>
+  </div>
+</header>
+
+<!-- ── Nav Tabs ──────────────────────────────────────── -->
+<nav class="nav">
+  <button class="nav-tab active" data-panel="today" onclick="switchPanel('today',this)">
+    <span class="tab-icon">✈</span> Today &amp; Next
+  </button>
+  <button class="nav-tab" data-panel="month" onclick="switchPanel('month',this)">
+    <span class="tab-icon">📅</span> May Roster
+  </button>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════
+     PANEL 1 — TODAY & NEXT
+═══════════════════════════════════════════════════════ -->
+<div class="panel active" id="panel-today">
+  <div class="content">
+
+    <!-- Current Shift -->
+    <div class="sec-label">Current Shift</div>
+    <div id="card-current" class="shift-card is-current"></div>
+
+    <!-- Next Shift -->
+    <div class="sec-label">Next Shift</div>
+    <div id="card-next" class="shift-card"></div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PANEL 2 — MONTH
+═══════════════════════════════════════════════════════ -->
+<div class="panel" id="panel-month">
+  <div class="content">
+
+    <div class="month-header">
+      <div class="month-title">May 2026</div>
+      <div class="month-stats">
+        <div class="stat-pill sp-blue" id="stat-flydays">— fly days</div>
+        <div class="stat-pill sp-orange" id="stat-sectors">— sectors</div>
+      </div>
+    </div>
+
+    <!-- View toggle -->
+    <div class="view-toggle">
+      <button class="vt-btn active" onclick="switchView('cal',this)">📆 Calendar</button>
+      <button class="vt-btn" onclick="switchView('list',this)">☰ List</button>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:var(--lavender);border:1px solid var(--gray-200)"></div>Short/Medium Haul</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--navy)"></div>Long Haul</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--lavender-light);border:1px dashed var(--gray-200)"></div>Layover</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--lavender);border:1px solid var(--gray-200)"></div>Rest</div>
+    </div>
+
+    <!-- Calendar view -->
+    <div id="view-cal">
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+
+    <!-- List view -->
+    <div id="view-list" style="display:none">
+      <div class="roster-list" id="rosterList"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Detail Drawer ──────────────────────────────────── -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-handle"></div>
+  <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  <div id="drawerContent"></div>
+</div>
+
+
+<script>
+/* =====================================================
+   ROSTER DATA — May 2026
+   Anna Mäkinen, FA-2847
+   Base: HEL (Helsinki-Vantaa)
+   All times local (EET/EEST = UTC+3)
+===================================================== */
+const ROSTER = {
+  // ── Week 1 ──────────────────────────────────────────
+  "2026-05-01": { type:"off" },
+  "2026-05-02": {
+    type:"flight", haul:"short",
+    briefing:"07:30", briefingLoc:"HEL T2 Crew Centre",
+    dutyEnd:"17:30",
+    sectors:[
+      { fn:"AY831", from:"HEL", fromCity:"Helsinki", to:"LHR", toCity:"London Heathrow",
+        dep:"08:35", arr:"10:50", ac:"A321neo", dur:"3h 15m" },
+      { fn:"AY832", from:"LHR", fromCity:"London Heathrow", to:"HEL", toCity:"Helsinki",
+        dep:"11:55", arr:"17:10", ac:"A321neo", dur:"3h 15m" }
+    ]
+  },
+  "2026-05-03": { type:"off" },
+  "2026-05-04": {
+    type:"flight", haul:"short",
+    briefing:"06:15", briefingLoc:"HEL T2 Crew Centre",
+    dutyEnd:"15:00",
+    sectors:[
+      { fn:"AY411", from:"HEL", fromCity:"Helsinki", to:"ARN", toCity:"Stockholm Arlanda",
+        dep:"07:20", arr:"07:55", ac:"E190", dur:"0h 35m" },
+      { fn:"AY414", from:"ARN", fromCity:"Stockholm Arlanda", to:"HEL", toCity:"Helsinki",
+        dep:"09:05", arr:"09:50", ac:"E190", dur:"0h 45m" },
+      { fn:"AY421", from:"HEL", fromCity:"Helsinki", to:"CPH", toCity:"Copenhagen",
+        dep:"10:45", arr:"11:35", ac:"E190", dur:"0h 50m" },
+      { fn:"AY422", from:"CPH", fromCity:"Copenhagen", to:"HEL", toCity:"Helsinki",
+        dep:"12:35", arr:"14:30", ac:"E190", dur:"1h 55m" }
+    ]
+  },
+  "2026-05-05": { type:"off" },
+  "2026-05-06": { type:"off" },
+  // ── Week 2 ──────────────────────────────────────────
+  "2026-05-07": {
+    type:"flight", haul:"long",
+    briefing:"09:30", briefingLoc:"HEL T2 Long-Haul Crew Briefing",
+    dutyEnd:"20:45",
+    note:"Outbound — overnight layover JFK",
+    sectors:[
+      { fn:"AY5", from:"HEL", fromCity:"Helsinki", to:"JFK", toCity:"New York JFK",
+        dep:"10:55", arr:"13:35", ac:"A350-900", dur:"9h 40m" }
+    ]
+  },
+  "2026-05-08": { type:"layover", city:"New York", hotel:"JW Marriott Essex House", country:"USA" },
+  "2026-05-09": {
+    type:"flight", haul:"long",
+    briefing:"07:00", briefingLoc:"JFK Terminal 8 Crew Room",
+    dutyEnd:"22:30",
+    note:"Return service JFK → HEL",
+    sectors:[
+      { fn:"AY6", from:"JFK", fromCity:"New York JFK", to:"HEL", toCity:"Helsinki",
+        dep:"09:05", arr:"22:00", ac:"A350-900", dur:"8h 55m" }
+    ]
+  },
+  "2026-05-10": { type:"rest" },
+  "2026-05-11": { type:"rest" },
+  "2026-05-12": {
+    type:"flight", haul:"short",
+    briefing:"11:45", briefingLoc:"HEL T2 Crew Centre",
+    dutyEnd:"21:30",
+    sectors:[
+      { fn:"AY841", from:"HEL", fromCity:"Helsinki", to:"CDG", toCity:"Paris CDG",
+        dep:"12:50", arr:"15:10", ac:"A319", dur:"3h 20m" },
+      { fn:"AY842", from:"CDG", fromCity:"Paris CDG", to:"HEL", toCity:"Helsinki",
+        dep:"16:10", arr:"20:35", ac:"A319", dur:"3h 25m" }
+    ]
+  },
+  "2026-05-13": { type:"off" },
+  "2026-05-14": {
+    type:"flight", haul:"short",
+    briefing:"13:00", briefingLoc:"HEL T2 Crew Centre",
+    dutyEnd:"22:45",
+    sectors:[
+      { fn:"AY861", from:"HEL", fromCity:"Helsinki", to:"AMS", toCity:"Amsterdam",
+        dep:"14:05", arr:"16:15", ac:"A320", dur:"3h 10m" },
+      { fn:"AY862", from:"AMS", fromCity:"Amsterdam", to:"HEL", toCity:"Helsinki",
+        dep:"17:15", arr:"21:45", ac:"A320", dur:"3h 30m" }
+    ]
+  },
+  "2026-05-15": { type:"off" },
+  "2026-05-16": { type:"off" },
+  // ── Week 3 ──────────────────────────────────────────
+  "2026-05-17": {
+    type:"flight", haul:"long",
+    briefing:"10:15", briefingLoc:"HEL T2 Long-Haul Crew Briefing",
+    dutyEnd:"23:00",
+    note:"Outbound — layover Tokyo NRT (2 nights)",
+    sectors:[
+      { fn:"AY73", from:"HEL", fromCity:"Helsinki", to:"NRT", toCity:"Tokyo Narita",
+        dep:"11:30", arr:"06:30+1", ac:"A350-900", dur:"10h 00m" }
+    ]
+  },
+  "2026-05-18": { type:"layover", city:"Tokyo", hotel:"Narita Marriott", country:"Japan" },
+  "2026-05-19": {
+    type:"flight", haul:"long",
+    briefing:"12:00", briefingLoc:"NRT T1 Crew Facility",
+    dutyEnd:"21:00",
+    note:"Return service NRT → HEL",
+    sectors:[
+      { fn:"AY74", from:"NRT", fromCity:"Tokyo Narita", to:"HEL", toCity:"Helsinki",
+        dep:"13:25", arr:"17:55", ac:"A350-900", dur:"11h 30m" }
+    ]
+  },
+  "2026-05-20": { type:"rest" },
+  "2026-05-21": { type:"rest" },
+  "2026-05-22": { type:"off" },
+  "2026-05-23": {
+    type:"flight", haul:"short",
+    briefing:"07:45", briefingLoc:"HEL T2 Crew Centre",
+    dutyEnd:"19:30",
+    sectors:[
+      { fn:"AY821", from:"HEL", fromCity:"Helsinki", to:"FRA", toCity:"Frankfurt",
+        dep:"08:50", arr:"10:55", ac:"A320", dur:"2h 05m" },
+      { fn:"AY822", from:"FRA", fromCity:"Frankfurt", to:"HEL", toCity:"Helsinki",
+        dep:"11:55", arr:"14:55", ac:"A320", dur:"2h 00m" },
+      { fn:"AY1391", from:"HEL", fromCity:"Helsinki", to:"MUC", toCity:"Munich",
+        dep:"15:50", arr:"17:55", ac:"A319", dur:"2h 05m" },
+      { fn:"AY1392", from:"MUC", fromCity:"Munich", to:"HEL", toCity:"Helsinki",
+        dep:"18:55", arr:"22:05", ac:"A319", dur:"2h 10m" }
+    ]
+  },
+  "2026-05-24": { type:"off" },
+  "2026-05-25": { type:"off" },
+  // ── Week 4 ──────────────────────────────────────────
+  "2026-05-26": {
+    type:"flight", haul:"short",
+    briefing:"10:45", briefingLoc:"HEL T2 Crew Centre, Gate 31",
+    dutyEnd:"21:45",
+    sectors:[
+      { fn:"AY1421", from:"HEL", fromCity:"Helsinki", to:"BCN", toCity:"Barcelona",
+        dep:"11:50", arr:"15:35", ac:"A321neo", dur:"3h 45m" },
+      { fn:"AY1422", from:"BCN", fromCity:"Barcelona", to:"HEL", toCity:"Helsinki",
+        dep:"16:35", arr:"21:30", ac:"A321neo", dur:"3h 55m" }
+    ]
+  },
+  "2026-05-27": { type:"off" },
+  "2026-05-28": { type:"off" },
+  "2026-05-29": {                       // ← TODAY
+    type:"flight", haul:"short",
+    briefing:"09:00", briefingLoc:"HEL T2 Crew Centre",
+    dutyEnd:"19:15",
+    sectors:[
+      { fn:"AY1601", from:"HEL", fromCity:"Helsinki", to:"DUB", toCity:"Dublin",
+        dep:"10:05", arr:"12:25", ac:"A321neo", dur:"3h 20m" },
+      { fn:"AY1602", from:"DUB", fromCity:"Dublin", to:"HEL", toCity:"Helsinki",
+        dep:"13:25", arr:"18:40", ac:"A321neo", dur:"3h 15m" }
+    ]
+  },
+  "2026-05-30": {                       // ← NEXT SHIFT
+    type:"flight", haul:"short",
+    briefing:"11:30", briefingLoc:"HEL T2 Crew Centre",
+    dutyEnd:"21:45",
+    sectors:[
+      { fn:"AY1531", from:"HEL", fromCity:"Helsinki", to:"FCO", toCity:"Rome Fiumicino",
+        dep:"12:35", arr:"15:25", ac:"A320", dur:"2h 50m" },
+      { fn:"AY1532", from:"FCO", fromCity:"Rome Fiumicino", to:"HEL", toCity:"Helsinki",
+        dep:"16:25", arr:"21:20", ac:"A320", dur:"2h 55m" }
+    ]
+  },
+  "2026-05-31": { type:"rest" }
+};
+
+/* =====================================================
+   HELPERS
+===================================================== */
+const TODAY_KEY = "2026-05-29";
+
+function pad(n){ return String(n).padStart(2,"0"); }
+
+function timeToMins(t){
+  if(!t) return 0;
+  const [h,m] = t.split(":").map(Number);
+  return h*60+m;
+}
+
+function fmtDate(dateStr){
+  const d = new Date(dateStr+"T12:00:00");
+  return d.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+}
+function fmtDateShort(dateStr){
+  const d = new Date(dateStr+"T12:00:00");
+  return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});
+}
+function getWeekday(dateStr){
+  const d = new Date(dateStr+"T12:00:00");
+  return d.toLocaleDateString("en-GB",{weekday:"short"});
+}
+function getDayNum(dateStr){
+  return parseInt(dateStr.split("-")[2]);
+}
+
+function getSectorStatus(sector, nowMins){
+  const dep = timeToMins(sector.dep);
+  const depPlus30 = dep + 30;
+  const depPlusDur = dep + parseDur(sector.dur);
+  if(nowMins > depPlusDur) return "done";
+  if(nowMins >= dep) return "flying";
+  return "next";
+}
+
+function parseDur(durStr){
+  // "3h 45m" → minutes
+  const m = durStr.match(/(\d+)h\s*(\d+)m/);
+  if(m) return parseInt(m[1])*60+parseInt(m[2]);
+  return 60;
+}
+
+function getDayStatus(dayData, key, nowMins){
+  if(!dayData || dayData.type !== "flight") return dayData ? dayData.type : "off";
+  if(key > TODAY_KEY) return "upcoming";
+  if(key < TODAY_KEY) return "completed";
+  // today
+  const brief = timeToMins(dayData.briefing);
+  const dutyEnd = timeToMins(dayData.dutyEnd);
+  if(nowMins < brief - 30) return "upcoming";
+  if(nowMins <= dutyEnd + 30) return "active";
+  return "completed";
+}
+
+function getProgress(dayData, nowMins){
+  if(!dayData || dayData.type !== "flight") return 0;
+  const start = timeToMins(dayData.briefing);
+  const end   = timeToMins(dayData.dutyEnd);
+  const pct   = Math.max(0,Math.min(100, (nowMins - start)/(end - start)*100));
+  return Math.round(pct);
+}
+
+/* =====================================================
+   RENDER — SHIFT CARD
+===================================================== */
+function statusClass(status){
+  return { active:"st-active", upcoming:"st-upcoming", completed:"st-completed",
+           off:"st-off", rest:"st-rest", layover:"st-layover" }[status] || "st-off";
+}
+function statusLabel(status){
+  return { active:"In Progress", upcoming:"Upcoming", completed:"Completed",
+           off:"Day Off", rest:"Rest Period", layover:"On Layover" }[status] || "Off";
+}
+function shiftTypeLabel(d, status){
+  if(!d) return "Day Off";
+  if(d.type==="off") return "Day Off";
+  if(d.type==="rest") return "Rest Period";
+  if(d.type==="layover") return `Layover — ${d.city}`;
+  if(d.type==="flight"){
+    if(d.haul==="long") return "Long-Haul Flight";
+    return "Short/Medium Haul";
+  }
+  return "—";
+}
+
+function renderShiftCard(key, nowMins){
+  const d   = ROSTER[key];
+  const st  = getDayStatus(d, key, nowMins);
+  const day = getDayNum(key);
+  const wd  = getWeekday(key);
+  const dateLabel = fmtDateShort(key);
+
+  let topHTML = `
+    <div class="card-top ${statusClass(st)}">
+      <div class="ct-left">
+        <div class="ct-status">${statusLabel(st)}</div>
+        <div class="ct-shift-type">${shiftTypeLabel(d, st)}</div>
+      </div>
+      <div class="ct-right">
+        <div class="ct-date">${dateLabel}</div>
+        <div class="ct-weekday">${wd}</div>
+      </div>
+    </div>`;
+
+  let bodyHTML = "";
+
+  if(!d || d.type==="off"){
+    bodyHTML = `<div class="card-body">
+      <div class="off-body">
+        <div class="off-icon">🌿</div>
+        <div>
+          <div class="off-title">Day Off</div>
+          <div class="off-sub">No duties scheduled</div>
+        </div>
+      </div>
+    </div>`;
+  } else if(d.type==="rest"){
+    bodyHTML = `<div class="card-body">
+      <div class="off-body">
+        <div class="off-icon">🛌</div>
+        <div>
+          <div class="off-title">Rest Period</div>
+          <div class="off-sub">Post-flight recovery day</div>
+        </div>
+      </div>
+    </div>`;
+  } else if(d.type==="layover"){
+    bodyHTML = `<div class="card-body">
+      <div class="off-body">
+        <div class="off-icon">🏨</div>
+        <div>
+          <div class="off-title">Crew Layover</div>
+          <div class="off-sub">${d.city}, ${d.country}</div>
+          <div class="off-sub" style="margin-top:4px;font-size:12px;color:var(--gray-400)">
+            📍 ${d.hotel}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  } else if(d.type==="flight"){
+    // Briefing row
+    let briefHTML = `
+      <div class="briefing-row">
+        <span class="br-icon">📋</span>
+        <div>
+          <div class="br-label">Flight Briefing</div>
+          <div style="font-size:10px;color:var(--gray-400);margin-top:1px">${d.briefingLoc||""}</div>
+        </div>
+        <div class="br-time">${d.briefing}<span class="br-loc">LT</span></div>
+      </div>`;
+
+    // Sectors
+    let sectorsHTML = `<div class="sectors">`;
+    for(let i=0; i<d.sectors.length; i++){
+      const sec = d.sectors[i];
+      const ss  = key===TODAY_KEY ? getSectorStatus(sec, nowMins) : (key < TODAY_KEY ? "done" : "next");
+      const isLast = i === d.sectors.length-1;
+      sectorsHTML += `
+        <div class="sector-wrapper">
+          <div class="sector-connector">
+            <div class="sc-dot ${ss}"></div>
+            ${!isLast ? `<div class="sc-line ${ss==="done"?"done":""}"></div>` : ""}
+          </div>
+          <div class="sector-item ${ss==="flying"?"is-flying":""} ${ss==="done"?"is-done":""}">
+            <div class="si-top">
+              <span class="fn-badge">${sec.fn}</span>
+              <span class="ac-badge">${sec.ac}</span>
+            </div>
+            <div class="si-route">
+              <div>
+                <div class="apt">${sec.from}</div>
+                <div class="apt-city">${sec.fromCity}</div>
+              </div>
+              <div class="route-mid">
+                <div class="route-dash"></div>
+                <span class="plane-icon">✈</span>
+                <div class="route-dash"></div>
+              </div>
+              <div style="text-align:right">
+                <div class="apt">${sec.to}</div>
+                <div class="apt-city" style="text-align:right">${sec.toCity}</div>
+              </div>
+            </div>
+            <div class="si-times">
+              <div class="st-col">
+                <div class="st-time">${sec.dep}</div>
+                <div class="st-label">Departs</div>
+              </div>
+              <div>
+                <div class="st-dur">${sec.dur}</div>
+              </div>
+              <div class="st-col" style="text-align:right">
+                <div class="st-time">${sec.arr}</div>
+                <div class="st-label">Arrives</div>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }
+    sectorsHTML += `</div>`;
+
+    // Progress (only for active today)
+    let progressHTML = "";
+    if(key===TODAY_KEY && st==="active"){
+      const pct = getProgress(d, nowMins);
+      progressHTML = `
+        <div class="shift-progress">
+          <div class="sp-labels">
+            <span>Duty start ${d.briefing}</span>
+            <span>${pct}% complete</span>
+            <span>${d.dutyEnd}</span>
+          </div>
+          <div class="sp-bar"><div class="sp-fill" id="progressFill" style="width:${pct}%"></div></div>
+        </div>`;
+    }
+
+    // Note
+    let noteHTML = d.note ? `<div style="font-size:11px;color:var(--gray-400);margin-top:10px;font-style:italic">ℹ ${d.note}</div>` : "";
+
+    bodyHTML = `<div class="card-body">${briefHTML}${sectorsHTML}${progressHTML}${noteHTML}</div>`;
+  }
+
+  return topHTML + bodyHTML;
+}
+
+/* =====================================================
+   RENDER — MONTH PANEL
+===================================================== */
+function buildCalendar(){
+  const grid = document.getElementById("calGrid");
+  const list = document.getElementById("rosterList");
+  if(!grid || !list) return;
+
+  // Header row
+  let calHTML = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
+    .map(d=>`<div class="cal-hdr">${d}</div>`).join("");
+
+  // May 1 2026 = Friday = weekday index 4 (Mon=0)
+  const firstDow = 4; // 0=Mon
+  for(let e=0; e<firstDow; e++) calHTML += `<div class="cal-day empty"></div>`;
+
+  let flyDays=0, totalSectors=0;
+
+  for(let d=1; d<=31; d++){
+    const key = `2026-05-${pad(d)}`;
+    const day = ROSTER[key] || {type:"off"};
+    const isToday = key===TODAY_KEY;
+    let cls = "cal-day";
+    let dotHTML = `<div class="cal-dot"></div>`;
+    let onClick = "";
+
+    if(day.type==="off")     { cls+=" d-off clickable"; }
+    else if(day.type==="rest"){ cls+=" d-rest"; }
+    else if(day.type==="layover"){ cls+=" d-layover clickable"; onClick=`onclick="openDrawer('${key}')" `; }
+    else if(day.type==="flight"){
+      flyDays++;
+      totalSectors += day.sectors.length;
+      cls += day.haul==="long" ? " d-longhaul clickable" : " d-flight clickable";
+      onClick=`onclick="openDrawer('${key}')" `;
+    }
+
+    if(isToday) cls += " d-today";
+
+    calHTML += `<div class="${cls}" ${onClick}title="${key}">
+      <div class="cal-num">${d}</div>${dotHTML}
+    </div>`;
+  }
+
+  grid.innerHTML = calHTML;
+
+  document.getElementById("stat-flydays").textContent = `${flyDays} fly days`;
+  document.getElementById("stat-sectors").textContent = `${totalSectors} sectors`;
+
+  // Roster list
+  let listHTML = "";
+  for(let d=1; d<=31; d++){
+    const key = `2026-05-${pad(d)}`;
+    const day = ROSTER[key] || {type:"off"};
+    const isToday = key===TODAY_KEY;
+    const wday = getWeekday(key);
+
+    let badge="", title="", sub="", clickable="";
+
+    if(day.type==="off"){
+      badge=`<span class="rr-badge rb-off">Off</span>`;
+      title="Day Off"; sub="No duties scheduled";
+    } else if(day.type==="rest"){
+      badge=`<span class="rr-badge rb-rest">Rest</span>`;
+      title="Rest Period"; sub="Post-flight recovery";
+    } else if(day.type==="layover"){
+      badge=`<span class="rr-badge rb-layover">Layover</span>`;
+      title=`Layover — ${day.city}`; sub=day.hotel;
+      clickable="clickable";
+    } else if(day.type==="flight"){
+      const isActive = isToday;
+      if(isActive) badge=`<span class="rr-badge rb-active">Active ✈</span>`;
+      else if(day.haul==="long") badge=`<span class="rr-badge rb-lh">Long Haul</span>`;
+      else badge=`<span class="rr-badge rb-flight">Flight</span>`;
+      const route = day.sectors.map(s=>s.from+"-"+s.to).join(" · ");
+      title = route;
+      sub = `Briefing ${day.briefing} · ${day.sectors.length} sector${day.sectors.length>1?"s":""} · ${day.sectors.map(s=>s.fn).join(", ")}`;
+      clickable="clickable";
+    }
+
+    const todayCls = isToday ? " is-today" : "";
+    const clickOnClick = (day.type==="flight"||day.type==="layover") ? `onclick="openDrawer('${key}')"` : "";
+    listHTML += `
+      <div class="roster-row ${clickable}${todayCls}" ${clickOnClick}>
+        <div class="rr-date">
+          <div class="rr-num">${d}</div>
+          <div class="rr-wday">${wday}</div>
+        </div>
+        <div class="rr-divider"></div>
+        <div class="rr-info">
+          <div class="rr-title">${title}</div>
+          <div class="rr-sub">${sub}</div>
+        </div>
+        ${badge}
+      </div>`;
+  }
+  list.innerHTML = listHTML;
+}
+
+/* =====================================================
+   RENDER — TODAY PANEL
+===================================================== */
+function buildToday(nowMins){
+  // Current shift = today
+  const curEl = document.getElementById("card-current");
+  if(curEl) curEl.innerHTML = renderShiftCard(TODAY_KEY, nowMins);
+
+  // Next shift = first future flight day
+  const nextEl = document.getElementById("card-next");
+  if(!nextEl) return;
+  const days = Object.keys(ROSTER).sort();
+  let nextKey = null;
+  for(const k of days){
+    if(k <= TODAY_KEY) continue;
+    const d = ROSTER[k];
+    if(d.type==="flight" || d.type==="layover") { nextKey=k; break; }
+  }
+  if(nextKey){
+    nextEl.innerHTML = renderShiftCard(nextKey, nowMins);
+  } else {
+    nextEl.innerHTML = `<div class="card-top st-off"><div class="ct-left">
+      <div class="ct-status">End of Month</div>
+      <div class="ct-shift-type">No more shifts in May</div></div></div>
+      <div class="card-body"><div class="off-body"><div class="off-icon">🎉</div>
+      <div><div class="off-title">Month complete</div><div class="off-sub">Check next month's roster</div></div></div></div>`;
+  }
+}
+
+/* =====================================================
+   DRAWER
+===================================================== */
+function openDrawer(key){
+  const d = ROSTER[key];
+  if(!d) return;
+  const now = new Date();
+  const nowMins = now.getHours()*60+now.getMinutes();
+  const content = document.getElementById("drawerContent");
+  const dateLabel = fmtDate(key);
+  content.innerHTML = `
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;color:var(--gray-400);font-weight:700;letter-spacing:.8px;text-transform:uppercase">${getWeekday(key)}, ${dateLabel}</div>
+      <div style="font-size:18px;font-weight:800;margin-top:2px">${shiftTypeLabel(d, getDayStatus(d,key,nowMins))}</div>
+    </div>
+    ${renderShiftCard(key,nowMins).replace(/<div class="card-top[^>]*>[\s\S]*?<\/div>\s*<\/div>/,"").replace(/^<div class="card-top[^"]*"[^>]*>[\s\S]*?<\/div><\/div>/,"")}
+  `;
+  // Actually render the full card content without the header
+  content.innerHTML = `
+    <div style="margin-bottom:16px">
+      <div style="font-size:11px;color:var(--gray-400);font-weight:700;letter-spacing:.8px;text-transform:uppercase">${getWeekday(key)} · ${fmtDateShort(key)}</div>
+      <div style="font-size:19px;font-weight:800;margin-top:3px">${shiftTypeLabel(d, getDayStatus(d,key,nowMins))}</div>
+    </div>
+    ${buildDrawerBody(d, key, nowMins)}
+  `;
+  document.getElementById("drawerOverlay").classList.add("open");
+  setTimeout(()=>document.getElementById("drawer").classList.add("open"),10);
+}
+
+function buildDrawerBody(d, key, nowMins){
+  if(d.type==="layover"){
+    return `<div class="off-body">
+      <div class="off-icon">🏨</div>
+      <div><div class="off-title">Crew Layover — ${d.city}</div>
+      <div class="off-sub">${d.country}</div>
+      <div class="off-sub" style="margin-top:6px">📍 ${d.hotel}</div></div></div>`;
+  }
+  if(d.type!=="flight") return "";
+  let briefHTML = `<div class="briefing-row">
+    <span class="br-icon">📋</span>
+    <div><div class="br-label">Flight Briefing</div>
+    <div style="font-size:10px;color:var(--gray-400);margin-top:1px">${d.briefingLoc||""}</div></div>
+    <div class="br-time">${d.briefing}<span class="br-loc">LT</span></div></div>`;
+  let sectorsHTML = `<div class="sectors">`;
+  for(let i=0;i<d.sectors.length;i++){
+    const sec=d.sectors[i];
+    const ss=key===TODAY_KEY?getSectorStatus(sec,nowMins):(key<TODAY_KEY?"done":"next");
+    const isLast=i===d.sectors.length-1;
+    sectorsHTML+=`<div class="sector-wrapper">
+      <div class="sector-connector">
+        <div class="sc-dot ${ss}"></div>
+        ${!isLast?`<div class="sc-line ${ss==="done"?"done":""}"></div>`:""}
+      </div>
+      <div class="sector-item ${ss==="flying"?"is-flying":""} ${ss==="done"?"is-done":""}">
+        <div class="si-top"><span class="fn-badge">${sec.fn}</span><span class="ac-badge">${sec.ac}</span></div>
+        <div class="si-route">
+          <div><div class="apt">${sec.from}</div><div class="apt-city">${sec.fromCity}</div></div>
+          <div class="route-mid"><div class="route-dash"></div><span class="plane-icon">✈</span><div class="route-dash"></div></div>
+          <div style="text-align:right"><div class="apt">${sec.to}</div><div class="apt-city" style="text-align:right">${sec.toCity}</div></div>
+        </div>
+        <div class="si-times">
+          <div><div class="st-time">${sec.dep}</div><div class="st-label">Departs</div></div>
+          <div><div class="st-dur">${sec.dur}</div></div>
+          <div style="text-align:right"><div class="st-time">${sec.arr}</div><div class="st-label">Arrives</div></div>
+        </div>
+      </div></div>`;
+  }
+  sectorsHTML+=`</div>`;
+  const noteHTML=d.note?`<div style="font-size:11px;color:var(--gray-400);margin-top:12px;font-style:italic">ℹ ${d.note}</div>`:"";
+  return briefHTML+sectorsHTML+noteHTML;
+}
+
+function closeDrawer(){
+  document.getElementById("drawer").classList.remove("open");
+  document.getElementById("drawerOverlay").classList.remove("open");
+}
+
+/* =====================================================
+   PANEL / VIEW SWITCHING
+===================================================== */
+function switchPanel(name, btn){
+  document.querySelectorAll(".nav-tab").forEach(t=>t.classList.remove("active"));
+  btn.classList.add("active");
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+  document.getElementById("panel-"+name).classList.add("active");
+}
+
+function switchView(name, btn){
+  document.querySelectorAll(".vt-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById("view-cal").style.display = name==="cal"?"block":"none";
+  document.getElementById("view-list").style.display = name==="list"?"block":"none";
+}
+
+/* =====================================================
+   CLOCK
+===================================================== */
+function updateClock(){
+  const now = new Date();
+  const hh = pad(now.getHours()), mm = pad(now.getMinutes()), ss = pad(now.getSeconds());
+  const el = document.getElementById("headerTime");
+  if(el) el.textContent = `${hh}:${mm}:${ss}`;
+  const dateEl = document.getElementById("headerDate");
+  if(dateEl) dateEl.textContent = now.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  return now.getHours()*60+now.getMinutes();
+}
+
+/* =====================================================
+   INIT
+===================================================== */
+document.addEventListener("DOMContentLoaded", ()=>{
+  const nowMins = updateClock();
+  buildToday(nowMins);
+  buildCalendar();
+  setInterval(()=>{
+    updateClock();
+    // Refresh active sector dots every minute
+    const todayCard = document.getElementById("card-current");
+    if(todayCard){
+      const now2 = new Date();
+      const nm = now2.getHours()*60+now2.getMinutes();
+      buildToday(nm);
+    }
+  }, 30000);
+  setInterval(updateClock, 1000);
+});
+</script>
+</body>
+</html>
