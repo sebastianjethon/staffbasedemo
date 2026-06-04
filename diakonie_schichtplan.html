@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Schichtplaner – Diakonie Leipzig</title>
+<style>
+  :root {
+    --dia-purple: #6a2c91;
+    --dia-purple-dark: #4e1f6e;
+    --dia-purple-light: #efe7f5;
+    --frueh: #e8a13a;
+    --frueh-bg: #fdf3e2;
+    --spaet: #2f7dbd;
+    --spaet-bg: #e7f1fa;
+    --nacht: #3b3f6b;
+    --nacht-bg: #e8e9f2;
+    --ink: #2b2533;
+    --muted: #7a7484;
+    --line: #e7e3ec;
+    --card: #ffffff;
+    --bg: #f6f4f9;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+    padding: 18px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; }
+
+  header.app {
+    background: linear-gradient(135deg, var(--dia-purple) 0%, var(--dia-purple-dark) 100%);
+    color: #fff;
+    border-radius: 16px;
+    padding: 20px 22px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 6px 22px rgba(78,31,110,.22);
+  }
+  .logo-mark {
+    width: 44px; height: 44px; flex: 0 0 44px;
+    border-radius: 12px;
+    background: rgba(255,255,255,.16);
+    display: grid; place-items: center;
+    font-size: 24px;
+  }
+  header.app h1 { font-size: 1.22rem; font-weight: 700; letter-spacing: .2px; }
+  header.app p { font-size: .82rem; opacity: .85; margin-top: 2px; }
+  .clock { margin-left: auto; text-align: right; }
+  .clock .time { font-size: 1.3rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .clock .date { font-size: .76rem; opacity: .85; }
+
+  .section-label {
+    font-size: .72rem; text-transform: uppercase; letter-spacing: 1.2px;
+    color: var(--muted); font-weight: 700; margin: 26px 4px 10px;
+  }
+
+  /* Current shift highlight */
+  .now-card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 4px;
+    box-shadow: 0 4px 16px rgba(43,37,51,.06);
+    border: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .now-banner {
+    border-radius: 13px;
+    padding: 16px 18px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .now-banner .badge {
+    font-size: .7rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .8px; padding: 4px 9px; border-radius: 999px;
+    background: rgba(255,255,255,.65);
+  }
+  .now-banner h2 { font-size: 1.35rem; font-weight: 800; }
+  .now-banner .hours { font-size: .9rem; font-weight: 600; opacity: .85; }
+  .now-right { margin-left: auto; text-align: right; }
+  .now-right .ends { font-size: .74rem; opacity: .8; }
+  .now-right .ends strong { font-size: 1rem; }
+
+  .staff {
+    padding: 14px 18px 16px;
+    display: flex; flex-wrap: wrap; gap: 8px;
+  }
+  .chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--dia-purple-light);
+    color: var(--dia-purple-dark);
+    border-radius: 999px;
+    padding: 6px 12px 6px 6px;
+    font-size: .86rem; font-weight: 600;
+  }
+  .chip .av {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--dia-purple); color: #fff;
+    display: grid; place-items: center;
+    font-size: .68rem; font-weight: 700;
+  }
+  .chip.lead { background: #f3e8d4; color: #7a5410; }
+  .chip.lead .av { background: #c08a1e; }
+
+  /* Day groups */
+  .day { margin-top: 18px; }
+  .day-head {
+    display: flex; align-items: baseline; gap: 8px;
+    margin: 0 4px 8px;
+  }
+  .day-head .dow { font-weight: 700; font-size: .98rem; }
+  .day-head .dt { color: var(--muted); font-size: .82rem; }
+  .day-head .today-tag {
+    margin-left: auto; font-size: .68rem; font-weight: 700;
+    background: var(--dia-purple); color: #fff;
+    padding: 3px 9px; border-radius: 999px; letter-spacing: .5px;
+  }
+
+  .shift-row {
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    gap: 12px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 13px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+  .shift-row.is-now { box-shadow: 0 0 0 2px var(--dia-purple) inset; }
+  .shift-tag {
+    border-radius: 10px; padding: 8px 6px; text-align: center;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .shift-tag .nm { font-weight: 800; font-size: .9rem; }
+  .shift-tag .hr { font-size: .68rem; opacity: .8; margin-top: 2px; }
+  .tag-frueh { background: var(--frueh-bg); color: #9a6410; }
+  .tag-spaet { background: var(--spaet-bg); color: #1c557f; }
+  .tag-nacht { background: var(--nacht-bg); color: #2c2f54; }
+
+  .people { display: flex; flex-wrap: wrap; gap: 6px; align-self: center; }
+  .mini {
+    font-size: .8rem; color: var(--ink);
+    background: #f4f1f7; border-radius: 8px; padding: 4px 9px;
+    font-weight: 500;
+  }
+  .mini.lead { background: #f3e8d4; color: #7a5410; font-weight: 700; }
+
+  footer.app {
+    margin-top: 26px; text-align: center;
+    color: var(--muted); font-size: .74rem; line-height: 1.6;
+  }
+  footer.app code { background: #ece7f2; padding: 1px 6px; border-radius: 5px; }
+
+  @media (max-width: 480px) {
+    body { padding: 12px; }
+    header.app { flex-wrap: wrap; }
+    .clock { margin-left: 0; width: 100%; text-align: left; margin-top: 6px; }
+    .shift-row { grid-template-columns: 84px 1fr; }
+    .now-banner h2 { font-size: 1.15rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="app">
+    <div class="logo-mark">✚</div>
+    <div>
+      <h1>Schichtplaner Pflege</h1>
+      <p>Diakonie Leipzig · Station</p>
+    </div>
+    <div class="clock">
+      <div class="time" id="clock">–––</div>
+      <div class="date" id="todaydate">–––</div>
+    </div>
+  </header>
+
+  <div class="section-label">Aktuelle Schicht</div>
+  <div id="now-mount"></div>
+
+  <div class="section-label">Heute &amp; nächste Tage</div>
+  <div id="days-mount"></div>
+
+  <footer class="app">
+    Aktualisiert sich automatisch nach dem aktuellen Datum &amp; der Uhrzeit.<br />
+    Schichten &amp; Team in der Datei unter <code>CONFIG</code> anpassbar.
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   CONFIG — hier alles anpassen
+   ============================================================ */
+const CONFIG = {
+  // Wie viele Tage ab heute anzeigen (inkl. heute)
+  daysToShow: 4,
+
+  // Schichtdefinition (24h). Nacht läuft über Mitternacht.
+  shifts: [
+    { key: "frueh", name: "Frühdienst", start: 6,  end: 14, cls: "frueh" },
+    { key: "spaet", name: "Spätdienst", start: 14, end: 22, cls: "spaet" },
+    { key: "nacht", name: "Nachtdienst", start: 22, end: 6,  cls: "nacht" }
+  ],
+
+  // Pflegeteam — Rotation wird automatisch über die Tage gebildet.
+  // "lead: true" markiert Schichtleitung.
+  team: [
+    { name: "Anja Hoffmann",   lead: true },
+    { name: "Markus Vogt" },
+    { name: "Petra Lindner" },
+    { name: "Sven Kühn" },
+    { name: "Lena Bauer" },
+    { name: "Thomas Reuter",   lead: true },
+    { name: "Carla Möller" },
+    { name: "Jens Albrecht" },
+    { name: "Nicole Wenzel" },
+    { name: "Daniel Schuster" },
+    { name: "Maria Krause",    lead: true },
+    { name: "Robert Fink" }
+  ],
+
+  // Besetzung pro Schicht
+  staffPerShift: { frueh: 3, spaet: 3, nacht: 2 }
+};
+
+/* ============================================================
+   Logik
+   ============================================================ */
+const DOW = ["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];
+const MON = ["Jan.","Feb.","März","Apr.","Mai","Juni","Juli","Aug.","Sep.","Okt.","Nov.","Dez."];
+
+function initials(n){ return n.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase(); }
+function pad(n){ return String(n).padStart(2,"0"); }
+
+// Deterministischer "Tagesindex" seit Epoche -> stabile, aber täglich wechselnde Rotation
+function dayIndex(d){
+  return Math.floor((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())) / 86400000);
+}
+
+// Wählt Personal für eine Schicht an einem Tag — deterministisch, ohne Doppelung am selben Tag
+function staffFor(date, shiftIdx){
+  const di = dayIndex(date);
+  const team = CONFIG.team;
+  const need = CONFIG.staffPerShift[CONFIG.shifts[shiftIdx].key] || 2;
+  // Offset variiert pro Tag und pro Schicht
+  const offset = (di * 5 + shiftIdx * 4) % team.length;
+  const picked = [];
+  for (let i = 0; i < need; i++){
+    picked.push(team[(offset + i) % team.length]);
+  }
+  return picked;
+}
+
+// Welche Schicht läuft gerade? Gibt {date, shiftIdx} zurück.
+function currentShift(now){
+  const h = now.getHours();
+  for (let i = 0; i < CONFIG.shifts.length; i++){
+    const s = CONFIG.shifts[i];
+    if (s.start < s.end){
+      if (h >= s.start && h < s.end) return { date: new Date(now), shiftIdx: i };
+    } else {
+      // über Mitternacht
+      if (h >= s.start || h < s.end){
+        const d = new Date(now);
+        if (h < s.end) d.setDate(d.getDate() - 1); // Nacht gehört zum Vortag
+        return { date: d, shiftIdx: i };
+      }
+    }
+  }
+  return { date: new Date(now), shiftIdx: 0 };
+}
+
+function fmtHours(s){
+  return pad(s.start) + ":00 – " + pad(s.end) + ":00";
+}
+
+function renderNow(now){
+  const cur = currentShift(now);
+  const s = CONFIG.shifts[cur.shiftIdx];
+  const staff = staffFor(cur.date, cur.shiftIdx);
+  const bg = getComputedStyle(document.documentElement).getPropertyValue('--'+s.cls+'-bg');
+  const fg = getComputedStyle(document.documentElement).getPropertyValue('--'+s.cls);
+
+  const chips = staff.map(p => {
+    return '<span class="chip'+(p.lead?' lead':'')+'">'
+      + '<span class="av">'+initials(p.name)+'</span>'
+      + p.name + (p.lead?' · Leitung':'') + '</span>';
+  }).join("");
+
+  document.getElementById("now-mount").innerHTML =
+    '<div class="now-card">'
+    + '<div class="now-banner" style="background:'+bg+'">'
+      + '<div>'
+        + '<span class="badge" style="color:'+fg+'">Jetzt im Dienst</span>'
+        + '<h2 style="color:'+fg+';margin-top:6px">'+s.name+'</h2>'
+        + '<div class="hours" style="color:'+fg+'">'+fmtHours(s)+' Uhr</div>'
+      + '</div>'
+      + '<div class="now-right">'
+        + '<div class="ends" style="color:'+fg+'">Schichtende<br><strong>'+pad(s.end)+':00 Uhr</strong></div>'
+      + '</div>'
+    + '</div>'
+    + '<div class="staff">'+chips+'</div>'
+    + '</div>';
+}
+
+function renderDays(now){
+  const cur = currentShift(now);
+  let html = "";
+  for (let d = 0; d < CONFIG.daysToShow; d++){
+    const date = new Date(now);
+    date.setHours(0,0,0,0);
+    date.setDate(date.getDate() + d);
+    const isToday = d === 0;
+
+    let rows = "";
+    CONFIG.shifts.forEach((s, idx) => {
+      const isNow = isToday
+        && cur.shiftIdx === idx
+        && cur.date.getDate() === date.getDate();
+      const staff = staffFor(date, idx);
+      const people = staff.map(p =>
+        '<span class="mini'+(p.lead?' lead':'')+'">'+p.name+'</span>'
+      ).join("");
+      rows +=
+        '<div class="shift-row'+(isNow?' is-now':'')+'">'
+        + '<div class="shift-tag tag-'+s.cls+'">'
+          + '<span class="nm">'+s.name.replace("dienst","")+'</span>'
+          + '<span class="hr">'+pad(s.start)+'–'+pad(s.end)+' Uhr</span>'
+        + '</div>'
+        + '<div class="people">'+people+'</div>'
+        + '</div>';
+    });
+
+    html +=
+      '<div class="day">'
+      + '<div class="day-head">'
+        + '<span class="dow">'+DOW[date.getDay()]+'</span>'
+        + '<span class="dt">'+date.getDate()+'. '+MON[date.getMonth()]+'</span>'
+        + (isToday?'<span class="today-tag">Heute</span>':'')
+      + '</div>'
+      + rows
+      + '</div>';
+  }
+  document.getElementById("days-mount").innerHTML = html;
+}
+
+function renderClock(){
+  const now = new Date();
+  document.getElementById("clock").textContent =
+    pad(now.getHours())+":"+pad(now.getMinutes());
+  document.getElementById("todaydate").textContent =
+    DOW[now.getDay()]+", "+now.getDate()+". "+MON[now.getMonth()]+" "+now.getFullYear();
+}
+
+function renderAll(){
+  const now = new Date();
+  renderClock();
+  renderNow(now);
+  renderDays(now);
+}
+
+renderAll();
+// Uhr jede Minute, kompletter Plan alle 5 Minuten aktualisieren
+setInterval(renderClock, 30 * 1000);
+setInterval(renderAll, 5 * 60 * 1000);
+</script>
+</body>
+</html>
