@@ -6,6 +6,7 @@
 <title>Kantinenplan</title>
 <style>
   :root{
+    color-scheme:light;
     --bg:#f4f6f8; --card:#ffffff; --ink:#1f2933; --muted:#7b8794;
     --line:#e4e7eb; --accent:#2f9e44; --accent-soft:#e6f4ea;
     --today:#fff4e6; --today-line:#ffa94d;
@@ -37,18 +38,20 @@
   .chip[data-cat="vegan"].active{background:var(--vegan)}
   .chip[data-cat="side"].active{background:var(--side)}
   .chip[data-cat="dessert"].active{background:var(--dessert)}
-  .days{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
-  .day{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
+  .days{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;align-items:start}
+  .day{display:block!important;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow);box-sizing:border-box}
   .day.today{border-color:var(--today-line);background:linear-gradient(180deg,var(--today),#fff 60%)}
-  .day h3{margin:0 0 2px;font-size:1.05rem;display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .day h3{margin:0 0 2px;font-size:1.05rem;display:flex!important;flex-direction:row;align-items:center;justify-content:space-between;gap:8px}
   .day .date{color:var(--muted);font-size:.82rem;margin-bottom:12px}
-  .badge-today{font-size:.68rem;font-weight:700;background:var(--today-line);color:#fff;padding:2px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.04em}
-  .dish{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+  .badge-today{font-size:.68rem;font-weight:700;background:var(--today-line);color:#fff;padding:2px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;flex:none}
+  .menu{display:flex!important;flex-direction:column!important;width:100%;gap:0}
+  .dish{display:flex!important;flex-direction:row!important;align-items:flex-start;gap:10px;padding:9px 0;border-top:1px solid var(--line);width:100%;box-sizing:border-box}
   .dish:first-of-type{border-top:0}
-  .dish .ic{font-size:1.2rem;line-height:1.4}
-  .dish .body{flex:1;min-width:0}
+  .dish .ic{font-size:1.2rem;line-height:1.4;flex:none}
+  .dish .body{flex:1 1 auto;min-width:0}
+  .dish .name{overflow-wrap:anywhere}
   .dish .name{font-size:.92rem;font-weight:600}
-  .dish .meta{display:flex;align-items:center;gap:8px;margin-top:2px}
+  .dish .meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:4px}
   .tag{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:2px 7px;border-radius:6px;color:#fff}
   .tag.meat{background:var(--meat)} .tag.veggie{background:var(--veggie)} .tag.vegan{background:var(--vegan)}
   .tag.side{background:var(--side)} .tag.dessert{background:var(--dessert)}
@@ -204,7 +207,7 @@ function dishHTML(id){
   return `<div class="dish"><div class="ic">${ICON[d.cat]}</div><div class="body">
     <div class="name">${d[lang]}</div>
     <div class="meta"><span class="tag ${d.cat}">${t[d.cat]}</span><span class="price">${d.p} €</span></div>
-  </div>`;
+  </div></div>`;
 }
 function dayCard(date,ids,isToday){
   const t=I18N[lang];
@@ -216,7 +219,7 @@ function dayCard(date,ids,isToday){
   return `<div class="day${isToday?" today":""}">
     <h3>${t.days[date.getDay()]}${isToday?`<span class="badge-today">${t.today}</span>`:""}</h3>
     <div class="date">${date.getDate()}. ${t.months[date.getMonth()]} ${date.getFullYear()}</div>
-    ${inner}</div>`;
+    <div class="menu">${inner}</div></div>`;
 }
 function render(){
   buildLang();buildTabs();buildFilters();
