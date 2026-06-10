@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kantinenplan</title>
+<style>
+  :root{
+    --bg:#f4f6f8; --card:#ffffff; --ink:#1f2933; --muted:#7b8794;
+    --line:#e4e7eb; --accent:#2f9e44; --accent-soft:#e6f4ea;
+    --today:#fff4e6; --today-line:#ffa94d;
+    --meat:#e8590c; --veggie:#2f9e44; --vegan:#0ca678; --side:#1971c2; --dessert:#ae3ec9;
+    --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.05);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.45;padding:20px}
+  .wrap{max-width:1100px;margin:0 auto}
+  header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
+  h1{font-size:1.6rem;margin:0;display:flex;align-items:center;gap:10px}
+  .sub{color:var(--muted);font-size:.9rem;margin-top:2px}
+  .lang{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:4px;box-shadow:var(--shadow)}
+  .lang button{border:0;background:transparent;padding:6px 10px;border-radius:7px;cursor:pointer;font-size:.85rem;font-weight:600;color:var(--muted)}
+  .lang button.active{background:var(--accent);color:#fff}
+  .controls{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;margin-bottom:18px}
+  .tabs{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:5px;box-shadow:var(--shadow)}
+  .tabs button{border:0;background:transparent;padding:9px 16px;border-radius:8px;cursor:pointer;font-size:.92rem;font-weight:600;color:var(--muted)}
+  .tabs button.active{background:var(--ink);color:#fff}
+  .filters{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{border:1px solid var(--line);background:var(--card);padding:7px 13px;border-radius:999px;cursor:pointer;font-size:.85rem;font-weight:600;
+    color:var(--muted);display:flex;align-items:center;gap:6px;transition:.15s}
+  .chip .dot{width:9px;height:9px;border-radius:50%}
+  .chip.active{color:#fff;border-color:transparent}
+  .chip[data-cat="all"].active{background:var(--ink)}
+  .chip[data-cat="meat"].active{background:var(--meat)}
+  .chip[data-cat="veggie"].active{background:var(--veggie)}
+  .chip[data-cat="vegan"].active{background:var(--vegan)}
+  .chip[data-cat="side"].active{background:var(--side)}
+  .chip[data-cat="dessert"].active{background:var(--dessert)}
+  .days{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+  .day{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
+  .day.today{border-color:var(--today-line);background:linear-gradient(180deg,var(--today),#fff 60%)}
+  .day h3{margin:0 0 2px;font-size:1.05rem;display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .day .date{color:var(--muted);font-size:.82rem;margin-bottom:12px}
+  .badge-today{font-size:.68rem;font-weight:700;background:var(--today-line);color:#fff;padding:2px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.04em}
+  .dish{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+  .dish:first-of-type{border-top:0}
+  .dish .ic{font-size:1.2rem;line-height:1.4}
+  .dish .body{flex:1;min-width:0}
+  .dish .name{font-size:.92rem;font-weight:600}
+  .dish .meta{display:flex;align-items:center;gap:8px;margin-top:2px}
+  .tag{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:2px 7px;border-radius:6px;color:#fff}
+  .tag.meat{background:var(--meat)} .tag.veggie{background:var(--veggie)} .tag.vegan{background:var(--vegan)}
+  .tag.side{background:var(--side)} .tag.dessert{background:var(--dessert)}
+  .price{color:var(--muted);font-size:.8rem;font-weight:600}
+  .empty{color:var(--muted);font-size:.85rem;font-style:italic;padding:6px 0}
+  footer{color:var(--muted);font-size:.78rem;text-align:center;margin-top:24px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>🍽️ <span data-i="title">Kantinenplan</span></h1>
+      <div class="sub" id="todayLabel"></div>
+    </div>
+    <div class="lang" id="lang"></div>
+  </header>
+
+  <div class="controls">
+    <div class="tabs" id="tabs"></div>
+    <div class="filters" id="filters"></div>
+  </div>
+
+  <div class="days" id="days"></div>
+
+  <footer data-i="footer"></footer>
+</div>
+
+<script>
+/* ---------- i18n ---------- */
+const I18N = {
+  de:{title:"Kantinenplan",today:"Heute",week:"Diese Woche",next:"Nächste Woche",
+    all:"Alle",meat:"Fleisch",veggie:"Vegetarisch",vegan:"Vegan",side:"Beilagen",dessert:"Desserts",
+    empty:"Keine Gerichte in dieser Kategorie.",closed:"Wochenende – geschlossen",
+    todayPrefix:"Heute ist",footer:"Beispielmenüs · Plan passt sich automatisch dem aktuellen Datum an",
+    days:["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"],
+    months:["Jan.","Feb.","März","Apr.","Mai","Juni","Juli","Aug.","Sep.","Okt.","Nov.","Dez."]},
+  en:{title:"Canteen Menu",today:"Today",week:"This week",next:"Next week",
+    all:"All",meat:"Meat",veggie:"Vegetarian",vegan:"Vegan",side:"Sides",dessert:"Desserts",
+    empty:"No dishes in this category.",closed:"Weekend – closed",
+    todayPrefix:"Today is",footer:"Sample menus · Plan adapts automatically to the current date",
+    days:["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+    months:["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]},
+  es:{title:"Menú de la Cantina",today:"Hoy",week:"Esta semana",next:"Próxima semana",
+    all:"Todos",meat:"Carne",veggie:"Vegetariano",vegan:"Vegano",side:"Guarniciones",dessert:"Postres",
+    empty:"No hay platos en esta categoría.",closed:"Fin de semana – cerrado",
+    todayPrefix:"Hoy es",footer:"Menús de ejemplo · El plan se adapta automáticamente a la fecha actual",
+    days:["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"],
+    months:["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"]},
+  fr:{title:"Menu de la Cantine",today:"Aujourd'hui",week:"Cette semaine",next:"Semaine prochaine",
+    all:"Tous",meat:"Viande",veggie:"Végétarien",vegan:"Végétalien",side:"Accompagnements",dessert:"Desserts",
+    empty:"Aucun plat dans cette catégorie.",closed:"Week-end – fermé",
+    todayPrefix:"Nous sommes le",footer:"Menus d'exemple · Le plan s'adapte automatiquement à la date actuelle",
+    days:["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"],
+    months:["Janv","Févr","Mars","Avr","Mai","Juin","Juil","Août","Sept","Oct","Nov","Déc"]}
+};
+
+/* ---------- Gerichtepool ---------- */
+const ICON = {meat:"🍖",veggie:"🥗",vegan:"🌱",side:"🍟",dessert:"🍰"};
+const DISH = {
+  // FLEISCH
+  m1:{cat:"meat",p:"6,90",de:"Schnitzel mit Jägersauce",en:"Schnitzel with mushroom sauce",es:"Escalope con salsa de champiñones",fr:"Escalope sauce aux champignons"},
+  m2:{cat:"meat",p:"7,40",de:"Hähnchencurry mit Reis",en:"Chicken curry with rice",es:"Curry de pollo con arroz",fr:"Curry de poulet au riz"},
+  m3:{cat:"meat",p:"6,50",de:"Rindergulasch mit Spätzle",en:"Beef goulash with spaetzle",es:"Gulash de ternera con spätzle",fr:"Goulash de bœuf et spätzle"},
+  m4:{cat:"meat",p:"7,20",de:"Lachsfilet mit Dillsauce",en:"Salmon fillet with dill sauce",es:"Filete de salmón con salsa de eneldo",fr:"Filet de saumon sauce à l'aneth"},
+  m5:{cat:"meat",p:"6,80",de:"Currywurst mit Pommes",en:"Currywurst with fries",es:"Salchicha al curry con patatas",fr:"Saucisse au curry et frites"},
+  m6:{cat:"meat",p:"7,90",de:"Putengeschnetzeltes",en:"Turkey ragout",es:"Ragú de pavo",fr:"Émincé de dinde"},
+  // VEGETARISCH
+  v1:{cat:"veggie",p:"5,90",de:"Käsespätzle mit Röstzwiebeln",en:"Cheese spaetzle with onions",es:"Spätzle con queso y cebolla",fr:"Spätzle au fromage et oignons"},
+  v2:{cat:"veggie",p:"5,50",de:"Gemüselasagne",en:"Vegetable lasagne",es:"Lasaña de verduras",fr:"Lasagne aux légumes"},
+  v3:{cat:"veggie",p:"5,80",de:"Spinat-Ricotta-Ravioli",en:"Spinach & ricotta ravioli",es:"Raviolis de espinaca y ricotta",fr:"Raviolis épinards-ricotta"},
+  v4:{cat:"veggie",p:"5,40",de:"Gemüsequiche mit Salat",en:"Vegetable quiche with salad",es:"Quiche de verduras con ensalada",fr:"Quiche aux légumes et salade"},
+  v5:{cat:"veggie",p:"5,90",de:"Halloumi-Bowl",en:"Halloumi bowl",es:"Bowl de halloumi",fr:"Bowl de halloumi"},
+  // VEGAN
+  vg1:{cat:"vegan",p:"5,90",de:"Linsen-Dal mit Naan",en:"Lentil dal with naan",es:"Dal de lentejas con naan",fr:"Dal de lentilles et naan"},
+  vg2:{cat:"vegan",p:"6,20",de:"Tofu-Pfanne süß-sauer",en:"Sweet & sour tofu stir-fry",es:"Tofu agridulce salteado",fr:"Tofu sauté aigre-doux"},
+  vg3:{cat:"vegan",p:"5,60",de:"Kichererbsen-Curry",en:"Chickpea curry",es:"Curry de garbanzos",fr:"Curry de pois chiches"},
+  vg4:{cat:"vegan",p:"5,80",de:"Buddha-Bowl mit Quinoa",en:"Buddha bowl with quinoa",es:"Buddha bowl con quinoa",fr:"Buddha bowl au quinoa"},
+  vg5:{cat:"vegan",p:"6,10",de:"Gemüse-Chili mit Reis",en:"Vegetable chili with rice",es:"Chili de verduras con arroz",fr:"Chili de légumes au riz"},
+  // BEILAGEN
+  s1:{cat:"side",p:"2,50",de:"Pommes Frites",en:"French fries",es:"Patatas fritas",fr:"Frites"},
+  s2:{cat:"side",p:"2,20",de:"Gemischter Salat",en:"Mixed salad",es:"Ensalada mixta",fr:"Salade mixte"},
+  s3:{cat:"side",p:"1,90",de:"Reis",en:"Rice",es:"Arroz",fr:"Riz"},
+  s4:{cat:"side",p:"2,30",de:"Kartoffelpüree",en:"Mashed potatoes",es:"Puré de patata",fr:"Purée de pommes de terre"},
+  s5:{cat:"side",p:"2,40",de:"Ofengemüse",en:"Roasted vegetables",es:"Verduras al horno",fr:"Légumes rôtis"},
+  s6:{cat:"side",p:"2,10",de:"Brötchen",en:"Bread roll",es:"Panecillo",fr:"Petit pain"},
+  // DESSERTS
+  d1:{cat:"dessert",p:"2,20",de:"Schokopudding",en:"Chocolate pudding",es:"Pudín de chocolate",fr:"Crème au chocolat"},
+  d2:{cat:"dessert",p:"2,40",de:"Obstsalat",en:"Fruit salad",es:"Macedonia de frutas",fr:"Salade de fruits"},
+  d3:{cat:"dessert",p:"2,30",de:"Apfelstrudel",en:"Apple strudel",es:"Strudel de manzana",fr:"Strudel aux pommes"},
+  d4:{cat:"dessert",p:"2,10",de:"Joghurt mit Müsli",en:"Yoghurt with granola",es:"Yogur con muesli",fr:"Yaourt au muesli"},
+  d5:{cat:"dessert",p:"2,50",de:"Tiramisu",en:"Tiramisu",es:"Tiramisú",fr:"Tiramisu"}
+};
+
+/* Menü pro Wochentag (Index 0=Mo ... 4=Fr), 2 Wochen */
+const PLAN = [
+  // Woche 1
+  [["m1","v1","vg1","s1","s2","d1"],     // Mo
+   ["m2","v2","vg2","s3","s2","d2"],     // Di
+   ["m3","v3","vg3","s4","s5","d3"],     // Mi
+   ["m4","v4","vg4","s2","s6","d4"],     // Do
+   ["m5","v5","vg5","s1","s5","d5"]],    // Fr
+  // Woche 2
+  [["m6","v2","vg5","s4","s2","d2"],     // Mo
+   ["m1","v3","vg1","s1","s5","d3"],     // Di
+   ["m2","v5","vg4","s3","s2","d1"],     // Mi
+   ["m3","v1","vg2","s4","s6","d5"],     // Do
+   ["m4","v4","vg3","s2","s5","d4"]]     // Fr
+];
+
+/* ---------- State ---------- */
+let lang="de", view="today", filter="all";
+const CATS=["all","meat","veggie","vegan","side","dessert"];
+
+/* ---------- Datum-Helfer ---------- */
+function monday(d){const x=new Date(d);const day=(x.getDay()+6)%7;x.setDate(x.getDate()-day);x.setHours(0,0,0,0);return x;}
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x;}
+function fmtDate(d){const t=I18N[lang];return t.days[d.getDay()]+", "+d.getDate()+". "+t.months[d.getMonth()]+" "+d.getFullYear();}
+function sameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
+
+/* ---------- Render ---------- */
+function buildLang(){
+  const el=document.getElementById("lang");el.innerHTML="";
+  ["de","en","es","fr"].forEach(l=>{
+    const b=document.createElement("button");b.textContent=l.toUpperCase();
+    if(l===lang)b.classList.add("active");
+    b.onclick=()=>{lang=l;document.documentElement.lang=l;render();};
+    el.appendChild(b);
+  });
+}
+function buildTabs(){
+  const el=document.getElementById("tabs");el.innerHTML="";const t=I18N[lang];
+  [["today",t.today],["week",t.week],["next",t.next]].forEach(([v,label])=>{
+    const b=document.createElement("button");b.textContent=label;
+    if(v===view)b.classList.add("active");
+    b.onclick=()=>{view=v;render();};
+    el.appendChild(b);
+  });
+}
+function buildFilters(){
+  const el=document.getElementById("filters");el.innerHTML="";const t=I18N[lang];
+  CATS.forEach(c=>{
+    const b=document.createElement("button");b.className="chip"+(c===filter?" active":"");b.dataset.cat=c;
+    if(c!=="all"){const dot=document.createElement("span");dot.className="dot";
+      dot.style.background=getComputedStyle(document.documentElement).getPropertyValue("--"+(c==="veggie"?"veggie":c));b.appendChild(dot);}
+    b.appendChild(document.createTextNode(t[c]));
+    b.onclick=()=>{filter=c;render();};
+    el.appendChild(b);
+  });
+}
+function dishHTML(id){
+  const t=I18N[lang],d=DISH[id];
+  return `<div class="dish"><div class="ic">${ICON[d.cat]}</div><div class="body">
+    <div class="name">${d[lang]}</div>
+    <div class="meta"><span class="tag ${d.cat}">${t[d.cat]}</span><span class="price">${d.p} €</span></div>
+  </div>`;
+}
+function dayCard(date,ids,isToday){
+  const t=I18N[lang];
+  let list=ids.filter(id=>filter==="all"||DISH[id].cat===filter);
+  // Reihenfolge: meat, veggie, vegan, side, dessert
+  const order={meat:0,veggie:1,vegan:2,side:3,dessert:4};
+  list.sort((a,b)=>order[DISH[a].cat]-order[DISH[b].cat]);
+  const inner = list.length? list.map(dishHTML).join("") : `<div class="empty">${t.empty}</div>`;
+  return `<div class="day${isToday?" today":""}">
+    <h3>${t.days[date.getDay()]}${isToday?`<span class="badge-today">${t.today}</span>`:""}</h3>
+    <div class="date">${date.getDate()}. ${t.months[date.getMonth()]} ${date.getFullYear()}</div>
+    ${inner}</div>`;
+}
+function render(){
+  buildLang();buildTabs();buildFilters();
+  const t=I18N[lang];
+  document.querySelectorAll("[data-i]").forEach(e=>e.textContent=t[e.dataset.i]);
+  document.title=t.title;
+  const now=new Date();
+  document.getElementById("todayLabel").textContent=t.todayPrefix+" "+fmtDate(now)+".";
+
+  const mon=monday(now);
+  const days=document.getElementById("days");days.innerHTML="";
+
+  if(view==="today"){
+    const idx=(now.getDay()+6)%7; // 0=Mo
+    if(idx>4){ // Wochenende
+      days.innerHTML=`<div class="day"><div class="empty">${t.closed}</div></div>`;
+    }else{
+      days.innerHTML=dayCard(now,PLAN[0][idx],true);
+    }
+  }else{
+    const weekOffset=view==="next"?1:0;
+    const base=addDays(mon,weekOffset*7);
+    let html="";
+    for(let i=0;i<5;i++){
+      const date=addDays(base,i);
+      html+=dayCard(date,PLAN[weekOffset][i],sameDay(date,now));
+    }
+    days.innerHTML=html;
+  }
+}
+render();
+</script>
+</body>
+</html>
